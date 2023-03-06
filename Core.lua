@@ -16,12 +16,14 @@ function eventFrame:ADDON_LOADED(addon)
 
         if type(MRT_NL_DB) ~= "table" then MRT_NL_DB = {} end
         if type(MRT_NL_DB.scale) ~= "number" then MRT_NL_DB.scale = 1 end
+        if type(MRT_NL_DB.autoshow) ~= "boolean" then MRT_NL_DB.autoshow = false end
+        if type(MRT_NL_DB.autohide) ~= "boolean" then MRT_NL_DB.autohide = false end
         if type(MRT_NL_DB.autoload) ~= "table" then
             MRT_NL_DB.autoload = {
                 -- {
                 --     ["type"] = "zone/eid/ename",
                 --     ["value"] = string/number,
-                --     ["note"] = noteName,
+                --     ["note"] = noteName(string)/noteIndex(number),
                 -- },
             }
         end
@@ -30,10 +32,12 @@ function eventFrame:ADDON_LOADED(addon)
         eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
         eventFrame:RegisterEvent("ZONE_CHANGED")
         eventFrame:RegisterEvent("ZONE_CHANGED_INDOORS")
+        eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         eventFrame:RegisterEvent("ENCOUNTER_START")
+        eventFrame:RegisterEvent("ENCOUNTER_END")
 
         -- button
-        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {120, 20})
+        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {127, 20})
         b:SetPoint("TOPRIGHT", 0, -45)
         b:SetScript("OnClick", function()
             MRT_NoteLoader:Show()
@@ -46,17 +50,27 @@ end
 -------------------------------------------------
 MRT_NL.autoload = {
     ["zone"] = {},
+    ["zone_p"] = {},
     ["eid"] = {},
+    ["eid_p"] = {},
     ["ename"] = {},
+    ["ename_p"] = {},
 }
 
 MRT_NL:RegisterCallback("UpdateAutoload", "Core_UpdateAutoload", function()
     wipe(MRT_NL.autoload.zone)
+    wipe(MRT_NL.autoload.zone_p)
     wipe(MRT_NL.autoload.eid)
+    wipe(MRT_NL.autoload.eid_p)
     wipe(MRT_NL.autoload.ename)
+    wipe(MRT_NL.autoload.ename_p)
 
     for _, t in pairs(MRT_NL_DB.autoload) do
-        MRT_NL.autoload[t.type][t.value] = t.note
+        if t.isPersonal then
+            MRT_NL.autoload[t.type.."_p"][t.value] = t.note
+        else
+            MRT_NL.autoload[t.type][t.value] = t.note
+        end
     end
 end)
 
@@ -68,50 +82,82 @@ function MRT_NL:Print(msg)
 end
 
 local function GetNoteIndex(title)
-    for i, name in pairs(VMRT.Note.BlackNames) do
-        if title == name then
-            return i
+    if type(title) == "string" then
+        for i, name in pairs(VMRT.Note.BlackNames) do
+            if title == name then
+                return i
+            end
         end
+    elseif type(title) == "number" and VMRT.Note.Black[title] then
+        return title
     end
 end
 
-function MRT_NL:LoadNote(title, force)
+local isEncounterInProgress = false
+local zoneFound = false
+
+function MRT_NL:LoadNote(title, isPersonal, force)
     local index = GetNoteIndex(title)
     if not index then
         MRT_NL:Print(string.format("note |cffff9015%s|r not found.", title))
         return
     end
     
-    -- do not load note during an encounter
-    if IsEncounterInProgress() and not force then return end
+    --! do not load if current note is loaded by ENCOUNTER_START 
+    if isEncounterInProgress and not force then return end
     
-    GMRT.A.Note.frame:Save(index)
-    MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", title))
+    if not VMRT.Note.enabled and MRT_NL_DB.autoshow then GMRT.A.Note:Enable() end
+
+    if isPersonal then
+        VMRT.Note.SelfText = VMRT.Note.Black[index]
+        GMRT.A.Note.frame:UpdateText()
+        MRT_NL:Print(string.format("personal note loaded |cffff9015%s|r.", title))
+    else
+        GMRT.A.Note.frame:Save(index)
+        MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", title))
+    end
 end
 
 -------------------------------------------------
 -- zone changed
 -------------------------------------------------
-function eventFrame:PLAYER_ENTERING_WORLD()
-    local isIn, iType = IsInInstance()
+function eventFrame:ZONE_CHANGED()
+    -- local isIn, iType = IsInInstance()
     local zone = GetSubZoneText()
     if zone == "" then
         zone = GetRealZoneText()
     end
 
     if not zone then
-        C_Timer.After(1, eventFrame.PLAYER_ENTERING_WORLD)
+        C_Timer.After(1, eventFrame.ZONE_CHANGED)
         return
     end
 
     MRT_NL:Fire("ZONE_CHANGED", zone)
+
+    zoneFound = false
+
     if MRT_NL.autoload.zone[zone] then
         MRT_NL:LoadNote(MRT_NL.autoload.zone[zone])
+        zoneFound = true
     end
+    if MRT_NL.autoload.zone_p[zone] then
+        MRT_NL:LoadNote(MRT_NL.autoload.zone_p[zone], true)
+        zoneFound = true
+    end
+
+    if not isEncounterInProgress and not zoneFound and MRT_NL_DB.autohide then GMRT.A.Note:Disable() end
 end
 
-eventFrame.ZONE_CHANGED = eventFrame.PLAYER_ENTERING_WORLD
-eventFrame.ZONE_CHANGED_INDOORS = eventFrame.PLAYER_ENTERING_WORLD
+eventFrame.ZONE_CHANGED_INDOORS = eventFrame.ZONE_CHANGED
+eventFrame.ZONE_CHANGED_NEW_AREA = eventFrame.ZONE_CHANGED
+
+function eventFrame:PLAYER_ENTERING_WORLD(isLogin, isReload)
+    eventFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    if isReload then
+        eventFrame:ZONE_CHANGED()
+    end
+end
 
 -------------------------------------------------
 -- encounter start
@@ -121,8 +167,23 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
     
     if MRT_NL.autoload.eid[encounterID] then
         MRT_NL:LoadNote(MRT_NL.autoload.eid[encounterID], true)
+        isEncounterInProgress = true
+    end
+    if MRT_NL.autoload.eid_p[encounterID] then
+        MRT_NL:LoadNote(MRT_NL.autoload.eid_p[encounterID], true, true)
+        isEncounterInProgress = true
     end
     if MRT_NL.autoload.ename[encounterName] then
         MRT_NL:LoadNote(MRT_NL.autoload.ename[encounterName], true)
+        isEncounterInProgress = true
     end
+    if MRT_NL.autoload.ename_p[encounterName] then
+        MRT_NL:LoadNote(MRT_NL.autoload.ename_p[encounterName], true, true)
+        isEncounterInProgress = true
+    end
+end
+
+function eventFrame:ENCOUNTER_END()
+    isEncounterInProgress = false
+    if not zoneFound and MRT_NL_DB.autohide then GMRT.A.Note:Disable() end
 end

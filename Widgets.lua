@@ -286,6 +286,85 @@ function W:CreateButton(parent, text, buttonColor, size, noBorder, noBackground,
 end
 
 -------------------------------------------------
+-- check button
+-------------------------------------------------
+function W:CreateCheckButton(parent, label, onClick, color)
+    -- InterfaceOptionsCheckButtonTemplate --> FrameXML\InterfaceOptionsPanels.xml line 19
+    -- OptionsBaseCheckButtonTemplate -->  FrameXML\OptionsPanelTemplates.xml line 10
+    
+    local cb = CreateFrame("CheckButton", nil, parent, "BackdropTemplate")
+    cb.onClick = onClick
+    cb:SetScript("OnClick", function(self)
+        PlaySound(self:GetChecked() and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF)
+        if cb.onClick then cb.onClick(self:GetChecked() and true or false, self) end
+    end)
+    
+    cb.label = cb:CreateFontString(nil, "OVERLAY", font_normal_name)
+    cb.label:SetText(label)
+    cb.label:SetPoint("LEFT", cb, "RIGHT", 5, 0)
+    -- cb.label:SetTextColor(accentColor.t[1], accentColor.t[2], accentColor.t[3])
+    
+    cb:SetSize(14, 14)
+    if strtrim(label) ~= "" then
+        cb:SetHitRectInsets(0, -cb.label:GetStringWidth()-5, 0, 0)
+    end
+
+    cb:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
+    cb:SetBackdropColor(0.115, 0.115, 0.115, 0.9)
+    cb:SetBackdropBorderColor(0, 0, 0, 1)
+
+    local checkedTexture = cb:CreateTexture(nil, "ARTWORK")
+    if color then
+        checkedTexture:SetColorTexture(color[1], color[2], color[3], color[4])
+    else
+        checkedTexture:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], accentColor.t[4])
+    end
+    checkedTexture:SetPoint("TOPLEFT", 1, -1)
+    checkedTexture:SetPoint("BOTTOMRIGHT", -1, 1)
+
+    local highlightTexture = cb:CreateTexture(nil, "ARTWORK")
+    if color then
+        highlightTexture:SetColorTexture(color[1], color[2], color[3], 0.1)
+    else
+        highlightTexture:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], 0.1)
+    end
+    highlightTexture:SetPoint("TOPLEFT", 1, -1)
+    highlightTexture:SetPoint("BOTTOMRIGHT", -1, 1)
+    
+    cb:SetCheckedTexture(checkedTexture)
+    cb:SetHighlightTexture(highlightTexture, "ADD")
+
+    cb:SetScript("OnEnable", function()
+        cb.label:SetTextColor(1, 1, 1)
+        if color then
+            checkedTexture:SetColorTexture(color[1], color[2], color[3], color[4])
+        else
+            checkedTexture:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], accentColor.t[4])
+        end
+        cb:SetBackdropBorderColor(0, 0, 0, 1)
+    end)
+
+    cb:SetScript("OnDisable", function()
+        cb.label:SetTextColor(0.4, 0.4, 0.4)
+        checkedTexture:SetColorTexture(0.4, 0.4, 0.4)
+        cb:SetBackdropBorderColor(0, 0, 0, 0.4)
+    end)
+
+    function cb:SetText(text)
+        cb.label:SetText(text)
+        if strtrim(label) ~= "" then
+            cb:SetHitRectInsets(0, -cb.label:GetStringWidth()-5, 0, 0)
+        else
+            cb:SetHitRectInsets(0, 0, 0, 0)
+        end
+    end
+
+    -- W:SetTooltips(cb, "ANCHOR_TOPLEFT", 0, 2, ...)
+
+    return cb
+end
+
+-------------------------------------------------
 -- editbox
 -------------------------------------------------
 function W:CreateEditBox(parent, width, height, isTransparent, isMultiLine, isNumeric, font)
@@ -387,7 +466,7 @@ function W:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, 
 
     local valueBeforeClick
     slider.onEnter = function()
-        tex:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], 1)
+        tex:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], 0.9)
         valueBeforeClick = slider:GetValue()
         -- if #tooltips > 0 then
         --     ShowTooltips(slider, "ANCHOR_TOPLEFT", 0, 3, tooltips)
@@ -1025,7 +1104,7 @@ end
 -------------------------------------------------
 -- autoload button
 -------------------------------------------------
-function W:CreateAutoloadButton(parent, type, value, note)
+function W:CreateAutoloadButton(parent, type, value, note, isPersonal)
     local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
     -- b:SetFrameLevel(5)
     b:SetSize(20, 20)
@@ -1053,6 +1132,10 @@ function W:CreateAutoloadButton(parent, type, value, note)
     noteText:SetWidth(100)
     noteText:SetWordWrap(false)
     noteText:SetText(note)
+
+    if isPersonal then
+        noteText:SetTextColor(0.56, 0.93, 0.56)
+    end
 
     local sep1 = b:CreateTexture(nil, "ARTWORK")
     sep1:SetColorTexture(0, 0, 0, 1)

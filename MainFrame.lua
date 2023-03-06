@@ -2,9 +2,10 @@ local _, MRT_NL = ...
 local W = MRT_NL.widgets
 
 local currentZone, currentEncounterID, currentEncounterName
-local UpdateButtons, LoadList
+local UpdateButtons, LoadList, LoadNoteNames
+local isPersonal
 
-local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 532, "DIALOG")
+local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 560, "DIALOG")
 mainFrame:Hide()
 mainFrame:ClearAllPoints()
 mainFrame:SetPoint("TOPLEFT", 200, -200)
@@ -23,7 +24,7 @@ scaleSlider.currentEditBox:Hide()
 -- local MRT_OptionsFrameName = "MRTOptionsFrame"
 -- local MRT_NoteModuleName = "Note"
 
-local mrtBtn = W:CreateButton(mainFrame.header, "MRT", "blue", {40, 20})
+local mrtBtn = W:CreateButton(mainFrame.header, "MRT", "blue", {50, 20})
 mrtBtn:SetPoint("BOTTOMRIGHT", mainFrame.header.closeBtn, "BOTTOMLEFT", 1, 0)
 mrtBtn:SetScript("OnClick", function()
     MRTOptionsFrame:Show()
@@ -85,7 +86,7 @@ end)
 -------------------------------------------------
 -- notes
 -------------------------------------------------
-local noteDD = W:CreateDropdown(infoPane, 337)
+local noteDD = W:CreateDropdown(infoPane, 240)
 noteDD:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -7)
 
 local noteText = noteDD:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_NORMAL")
@@ -93,26 +94,37 @@ noteText:SetPoint("RIGHT", -20, 0)
 noteText:SetText("note")
 noteText:SetTextColor(0.7, 0.7, 0.7, 0.7)
 
-local function LoadNotes()
+local noteRefreshBtn = W:CreateButton(infoPane, "", "accent", {20, 20})
+noteRefreshBtn:SetPoint("TOPLEFT", noteDD, "TOPRIGHT", -1, 0)
+noteRefreshBtn:SetTexture("Interface\\AddOns\\MRT_NoteLoader\\Media\\refresh", {16, 16}, {"CENTER", 0, 0})
+noteRefreshBtn:SetScript("OnClick", function()
+    LoadNoteNames()
+end)
+W:RegisterForCloseDropdown(noteRefreshBtn)
+
+local personalCB = W:CreateCheckButton(infoPane, "|cff90ee90Personal", function(checked)
+    if checked then
+        isPersonal = true
+    else
+        isPersonal = nil
+    end
+end, {0.56, 0.93, 0.56, 0.6})
+personalCB:SetPoint("BOTTOMLEFT", noteRefreshBtn, "BOTTOMRIGHT", 7, 3)
+
+LoadNoteNames = function()
     local items = {}
-    for _, name in pairs(VMRT.Note.BlackNames) do
+    for i in pairs(VMRT.Note.Black) do
         tinsert(items, {
-            ["text"] = name,
+            ["text"] = VMRT.Note.BlackNames[i] and VMRT.Note.BlackNames[i] or i,
             ["onClick"] = function()
                 UpdateButtons()
+                personalCB:SetChecked(false)
+                isPersonal = nil
             end,
         })
     end
     noteDD:SetItems(items)
 end
-
-local noteRefreshBtn = W:CreateButton(infoPane, "", "accent", {20, 20})
-noteRefreshBtn:SetPoint("TOPLEFT", noteDD, "TOPRIGHT", -1, 0)
-noteRefreshBtn:SetTexture("Interface\\AddOns\\MRT_NoteLoader\\Media\\refresh", {16, 16}, {"CENTER", 0, 0})
-noteRefreshBtn:SetScript("OnClick", function()
-    LoadNotes()
-end)
-W:RegisterForCloseDropdown(noteRefreshBtn)
 
 -------------------------------------------------
 -- create
@@ -129,6 +141,7 @@ addZoneBtn:SetScript("OnClick", function()
         ["type"] = "zone",
         ["value"] = strtrim(zoneEB:GetText()),
         ["note"] = noteDD:GetSelected(),
+        ["isPersonal"] = isPersonal,
     })
     MRT_NL:Fire("UpdateAutoload")
 end)
@@ -145,6 +158,7 @@ addIdBtn:SetScript("OnClick", function()
         ["type"] = "eid",
         ["value"] = idEB:GetNumber(),
         ["note"] = noteDD:GetSelected(),
+        ["isPersonal"] = isPersonal,
     })
     MRT_NL:Fire("UpdateAutoload")
 end)
@@ -161,6 +175,7 @@ addNameBtn:SetScript("OnClick", function()
         ["type"] = "ename",
         ["value"] = strtrim(nameEB:GetText()),
         ["note"] = noteDD:GetSelected(),
+        ["isPersonal"] = isPersonal,
     })
     MRT_NL:Fire("UpdateAutoload")
 end)
@@ -195,7 +210,7 @@ end)
 -------------------------------------------------
 local listPane = CreateFrame("Frame", nil, mainFrame)
 listPane:SetPoint("TOPLEFT", infoPane, "BOTTOMLEFT", 0, -7)
-listPane:SetPoint("BOTTOMRIGHT", 0, 8)
+listPane:SetPoint("BOTTOMRIGHT", 0, 36)
 W:CreateScrollFrame(listPane)
 
 LoadList = function()
@@ -203,7 +218,7 @@ LoadList = function()
     
     local last
     for i, t in pairs(MRT_NL_DB.autoload) do
-        local b = W:CreateAutoloadButton(listPane.scrollFrame.content, t.type, t.value, t.note)
+        local b = W:CreateAutoloadButton(listPane.scrollFrame.content, t.type, t.value, t.note, t.isPersonal)
         b:SetPoint("RIGHT", -7, 0)
         if last then
             b:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -7)
@@ -218,7 +233,7 @@ LoadList = function()
         end)
 
         b:SetScript("OnClick", function()
-            MRT_NL:LoadNote(t.note, true)
+            MRT_NL:LoadNote(t.note, t.isPersonal, true)
         end)
     end
 
@@ -227,12 +242,33 @@ LoadList = function()
 end
 
 -------------------------------------------------
+-- options
+-------------------------------------------------
+local optionsPane = CreateFrame("Frame", nil, mainFrame, "BackdropTemplate")
+optionsPane:SetPoint("TOPLEFT", listPane, "BOTTOMLEFT", 0, -7)
+optionsPane:SetPoint("BOTTOMRIGHT")
+optionsPane:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
+optionsPane:SetBackdropBorderColor(0, 0, 0, 1)
+
+local autoShowCB = W:CreateCheckButton(optionsPane, "Auto Show", function(checked)
+    MRT_NL_DB.autoshow = checked
+end)
+autoShowCB:SetPoint("BOTTOMLEFT", 7, 7)
+
+local autoHideCB = W:CreateCheckButton(optionsPane, "Auto Hide", function(checked)
+    MRT_NL_DB.autohide = checked
+end)
+autoHideCB:SetPoint("BOTTOMLEFT", 180, 7)
+
+-------------------------------------------------
 -- onshow
 -------------------------------------------------
 mainFrame:SetScript("OnShow", function()
     scaleSlider:SetValue(MRT_NL_DB.scale)
     mainFrame:SetScale(MRT_NL_DB.scale)
-    LoadNotes()
+    LoadNoteNames()
+    autoShowCB:SetChecked(MRT_NL_DB.autoshow)
+    autoHideCB:SetChecked(MRT_NL_DB.autohide)
 end)
 
 mainFrame:SetScript("OnHide", function()
@@ -241,6 +277,8 @@ mainFrame:SetScript("OnHide", function()
     addZoneBtn:SetEnabled(false)
     addIdBtn:SetEnabled(false)
     addNameBtn:SetEnabled(false)
+    personalCB:SetChecked(false)
+    isPersonal = nil
 end)
 
 -------------------------------------------------
