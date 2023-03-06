@@ -99,6 +99,11 @@ function eventFrame:PLAYER_ENTERING_WORLD()
         zone = GetRealZoneText()
     end
 
+    if not zone then
+        C_Timer.After(1, eventFrame.PLAYER_ENTERING_WORLD)
+        return
+    end
+
     MRT_NL:Fire("ZONE_CHANGED", zone)
     if MRT_NL.autoload.zone[zone] then
         MRT_NL:LoadNote(MRT_NL.autoload.zone[zone])
