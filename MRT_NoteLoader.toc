@@ -1,0 +1,14 @@
+## Interface: 100005
+## Title: MRT Note Loader
+## Version: 1.0.0
+## Author: 篠崎
+## X-Flavor: Mainline
+## SavedVariables: MRT_NL_DB
+## Dependencies: MRT
+
+CallbackHandler.lua
+
+Core.lua
+Widgets.lua
+
+MainFrame.lua
