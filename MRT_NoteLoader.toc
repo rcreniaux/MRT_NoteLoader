@@ -6,6 +6,8 @@
 ## SavedVariables: MRT_NL_DB
 ## Dependencies: MRT
 
+## X-Curse-Project-ID: 834919
+
 CallbackHandler.lua
 
 Core.lua
