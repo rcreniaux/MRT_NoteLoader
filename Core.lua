@@ -95,18 +95,26 @@ end
 
 local isEncounterInProgress = false
 local zoneFound = false
+local enabledByThisAddon = false
 
 function MRT_NL:LoadNote(title, isPersonal, force)
+    --! do not load if current note is loaded by ENCOUNTER_START 
+    if isEncounterInProgress and not force then return end
+    
+    if MRT_NL_DB.autoshow then
+        if not VMRT.Note.enabled then
+            GMRT.A.Note:Enable()
+            enabledByThisAddon = true
+        end
+    elseif not VMRT.Note.enabled then
+        return
+    end
+
     local index = GetNoteIndex(title)
     if not index then
         MRT_NL:Print(string.format("note |cffff9015%s|r not found.", title))
         return
     end
-    
-    --! do not load if current note is loaded by ENCOUNTER_START 
-    if isEncounterInProgress and not force then return end
-    
-    if not VMRT.Note.enabled and MRT_NL_DB.autoshow then GMRT.A.Note:Enable() end
 
     if isPersonal then
         VMRT.Note.SelfText = VMRT.Note.Black[index]
@@ -146,7 +154,10 @@ function eventFrame:ZONE_CHANGED()
         zoneFound = true
     end
 
-    if not isEncounterInProgress and not zoneFound and MRT_NL_DB.autohide then GMRT.A.Note:Disable() end
+    if MRT_NL_DB.autohide and enabledByThisAddon and not isEncounterInProgress and not zoneFound then
+        GMRT.A.Note:Disable()
+        enabledByThisAddon = false
+    end
 end
 
 eventFrame.ZONE_CHANGED_INDOORS = eventFrame.ZONE_CHANGED
@@ -185,5 +196,12 @@ end
 
 function eventFrame:ENCOUNTER_END()
     isEncounterInProgress = false
-    if not zoneFound and MRT_NL_DB.autohide then GMRT.A.Note:Disable() end
+    if MRT_NL_DB.autohide and enabledByThisAddon then
+        if zoneFound then -- reload note for this zone
+            eventFrame:ZONE_CHANGED()
+        else
+            GMRT.A.Note:Disable()
+            enabledByThisAddon = false
+        end
+    end
 end
