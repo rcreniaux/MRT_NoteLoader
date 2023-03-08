@@ -250,15 +250,15 @@ optionsPane:SetPoint("BOTTOMRIGHT")
 optionsPane:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
 optionsPane:SetBackdropBorderColor(0, 0, 0, 1)
 
-local autoShowCB = W:CreateCheckButton(optionsPane, "Auto Show", function(checked)
+local autoShowCB = W:CreateCheckButton(optionsPane, "Auto enable MRT note", function(checked)
     MRT_NL_DB.autoshow = checked
 end)
 autoShowCB:SetPoint("BOTTOMLEFT", 7, 7)
 
-local autoHideCB = W:CreateCheckButton(optionsPane, "Auto Hide", function(checked)
+local autoHideCB = W:CreateCheckButton(optionsPane, "Auto disable MRT note", function(checked)
     MRT_NL_DB.autohide = checked
 end)
-autoHideCB:SetPoint("BOTTOMLEFT", 180, 7)
+autoHideCB:SetPoint("BOTTOMLEFT", 185, 7)
 
 -------------------------------------------------
 -- onshow
