@@ -16,6 +16,7 @@ function eventFrame:ADDON_LOADED(addon)
 
         if type(MRT_NL_DB) ~= "table" then MRT_NL_DB = {} end
         if type(MRT_NL_DB.scale) ~= "number" then MRT_NL_DB.scale = 1 end
+        if type(MRT_NL_DB.clearMismatched) ~= "boolean" then MRT_NL_DB.clearMismatched = true end
         if type(MRT_NL_DB.postAction) ~= "string" then MRT_NL_DB.postAction = "hide" end
         if type(MRT_NL_DB.autoload) ~= "table" then
             MRT_NL_DB.autoload = {
@@ -36,8 +37,8 @@ function eventFrame:ADDON_LOADED(addon)
         eventFrame:RegisterEvent("ENCOUNTER_END")
 
         -- button
-        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {140, 20})
-        b:SetPoint("TOPLEFT", 80, 7)
+        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {135, 20})
+        b:SetPoint("TOPRIGHT", 0, -45)
         b:SetScript("OnClick", function()
             MRT_NoteLoader:Show()
         end)
@@ -106,9 +107,12 @@ local function GetNoteIndex(title)
     end
 end
 
-local isEncounterInProgress = false
-local zoneFound = false
 local showByThisAddon = false
+local isEncounterInProgress = false
+local zoneNote = false
+local zonePersonal = false
+local encounterNote = false
+local encounterPersonal = false
 
 function MRT_NL:LoadNote(title, isPersonal, force)
     --! do not load if current note is loaded by ENCOUNTER_START 
@@ -139,25 +143,51 @@ end
 -------------------------------------------------
 -- after encounter / zone changed
 -------------------------------------------------
-local function HideOrLoad()
+local function PostAction()
     showByThisAddon = false
+
     if MRT_NL_DB.postAction == "hide" then
         GMRT.A.Note.frame:SetAlpha(0)
         GMRT.A.Note.frame:EnableMouse(false)
 
-    elseif MRT_NL_DB.postAction == "load" or MRT_NL_DB.postAction == "loadAndClear" then
+    elseif MRT_NL_DB.postAction == "load" or MRT_NL_DB.postAction == "load_clear" then
         if VMRT.Note.BlackNames[1] == "Note Loader Default" then
             GMRT.A.Note.frame:Save(1)
+            MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", "Default"))
         end
-        
-        if MRT_NL_DB.postAction == "loadAndClear" then
+        if MRT_NL_DB.postAction == "load_clear" then
             VMRT.Note.SelfText = ""
-            GMRT.A.Note.frame:UpdateText()
         end
+        GMRT.A.Note.frame:UpdateText()
+    
+    elseif MRT_NL_DB.postAction == "load_personal" or MRT_NL_DB.postAction == "load_personal_clear" then
+        if VMRT.Note.BlackNames[1] == "Note Loader Default" then
+            VMRT.Note.SelfText = VMRT.Note.Black[1]
+            MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", "Default"))
+        end
+        if MRT_NL_DB.postAction == "load_personal_clear" then
+            VMRT.Note.Text1 = ""
+        end
+        GMRT.A.Note.frame:UpdateText()
 
     else
         -- do nothing
     end
+
+end
+
+local function ClearMismatched()
+    -- clear note if not matched
+    if not (zoneNote or encounterNote) then
+        VMRT.Note.Text1 = ""
+    end
+
+    -- clear personal note if not matched
+    if not (zonePersonal or encounterPersonal) then
+        VMRT.Note.SelfText = ""
+    end
+
+    GMRT.A.Note.frame:UpdateText()
 end
 
 -------------------------------------------------
@@ -177,19 +207,27 @@ function eventFrame:ZONE_CHANGED()
 
     MRT_NL:Fire("ZONE_CHANGED", zone)
 
-    zoneFound = false
+    zoneNote = false
+    zonePersonal = false
 
     if MRT_NL.autoload.zone[zone] then
         MRT_NL:LoadNote(MRT_NL.autoload.zone[zone])
-        zoneFound = true
+        zoneNote = true
     end
+    
     if MRT_NL.autoload.zone_p[zone] then
         MRT_NL:LoadNote(MRT_NL.autoload.zone_p[zone], true)
-        zoneFound = true
+        zonePersonal = true
     end
 
-    if showByThisAddon and not isEncounterInProgress and not zoneFound then
-        HideOrLoad()
+    if showByThisAddon then
+        if MRT_NL_DB.clearMismatched then
+            ClearMismatched()
+        end
+
+        if not isEncounterInProgress and not (zoneNote or zonePersonal) then
+            PostAction()
+        end
     end
 end
 
@@ -209,36 +247,47 @@ end
 function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, groupSize)
     MRT_NL:Fire("ENCOUNTER_START", encounterID, encounterName)
     
+    encounterNote = false
+    encounterPersonal = false
+
     if MRT_NL.autoload.eid[encounterID] then
         isEncounterInProgress = true
         MRT_NL:LoadNote(MRT_NL.autoload.eid[encounterID], false, true)
+        encounterNote = true
     end
+    
     if MRT_NL.autoload.eid_p[encounterID] then
         isEncounterInProgress = true
         MRT_NL:LoadNote(MRT_NL.autoload.eid_p[encounterID], true, true)
+        encounterPersonal = true
     end
+
     if MRT_NL.autoload.ename[encounterName] then
         isEncounterInProgress = true
         MRT_NL:LoadNote(MRT_NL.autoload.ename[encounterName], false, true)
+        encounterNote = true
     end
     if MRT_NL.autoload.ename_p[encounterName] then
         isEncounterInProgress = true
         MRT_NL:LoadNote(MRT_NL.autoload.ename_p[encounterName], true, true)
+        encounterPersonal = true
     end
 
-    if isEncounterInProgress then
-        -- call MRT's ENCOUNTER_START
-        GMRT.A.Note.main:ENCOUNTER_START(encounterID, encounterName, difficultyID, groupSize)
+    if MRT_NL_DB.clearMismatched then
+        ClearMismatched()
     end
 end
 
 function eventFrame:ENCOUNTER_END()
     isEncounterInProgress = false
+    encounterNote = false
+    encounterPersonal = false
+
     if showByThisAddon then
-        if zoneFound then -- reload note for this zone
+        if zoneNote or zonePersonal then -- reload note for this zone
             eventFrame:ZONE_CHANGED()
         else
-            HideOrLoad()
+            PostAction()
         end
     end
 end

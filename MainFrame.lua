@@ -5,7 +5,7 @@ local currentZone, currentEncounterID, currentEncounterName
 local UpdateButtons, LoadList, LoadNoteNames
 local isPersonal
 
-local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 586, "DIALOG")
+local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 610, "DIALOG")
 mainFrame:Hide()
 mainFrame:ClearAllPoints()
 mainFrame:SetPoint("TOPLEFT", 200, -200)
@@ -210,7 +210,7 @@ end)
 -------------------------------------------------
 local listPane = CreateFrame("Frame", nil, mainFrame)
 listPane:SetPoint("TOPLEFT", infoPane, "BOTTOMLEFT", 0, -7)
-listPane:SetPoint("BOTTOMRIGHT", 0, 62)
+listPane:SetPoint("BOTTOMRIGHT", 0, 86)
 W:CreateScrollFrame(listPane)
 
 LoadList = function()
@@ -250,22 +250,17 @@ optionsPane:SetPoint("BOTTOMRIGHT")
 optionsPane:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
 optionsPane:SetBackdropBorderColor(0, 0, 0, 1)
 
--- local autoShowCB = W:CreateCheckButton(optionsPane, "Auto enable MRT note", function(checked)
---     MRT_NL_DB.autoshow = checked
--- end)
--- autoShowCB:SetPoint("BOTTOMLEFT", 7, 7)
-
--- local autoHideCB = W:CreateCheckButton(optionsPane, "Auto disable MRT note", function(checked)
---     MRT_NL_DB.autohide = checked
--- end)
--- autoHideCB:SetPoint("BOTTOMLEFT", 185, 7)
+local clearMismatchedCB = W:CreateCheckButton(optionsPane, "Clear mismatched normal / personal note", function(checked)
+    MRT_NL_DB.clearMismatched = checked
+end)
+clearMismatchedCB:SetPoint("TOPLEFT", 7, -7)
 
 local postActionText = optionsPane:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_ACCENT")
-postActionText:SetPoint("TOPLEFT", 7, -7)
+postActionText:SetPoint("TOPLEFT", 7, -34)
 postActionText:SetText("After encounter ends / zone changes")
 
 local postActionDD = W:CreateDropdown(optionsPane, 356)
-postActionDD:SetPoint("TOPLEFT", optionsPane, 7, -27)
+postActionDD:SetPoint("TOPLEFT", optionsPane, 7, -52)
 postActionDD:SetItems({
     {
         ["text"] = "Do nothing",
@@ -288,13 +283,27 @@ postActionDD:SetItems({
             MRT_NL_DB.postAction = "load"
         end,
     },
+    -- {
+    --     ["text"] = "Load |cffff9015Note Loader Default|r and clear",
+    --     ["value"] = "load_clear",
+    --     ["onClick"] = function()
+    --         MRT_NL_DB.postAction = "load_clear"
+    --     end,
+    -- },
     {
-        ["text"] = "Load |cffff9015Note Loader Default|r and clear personal",
-        ["value"] = "loadAndClear",
+        ["text"] = "Load |cffff9015Note Loader Default|r (personal)",
+        ["value"] = "load_personal",
         ["onClick"] = function()
-            MRT_NL_DB.postAction = "loadAndClear"
+            MRT_NL_DB.postAction = "load_personal"
         end,
     },
+    -- {
+    --     ["text"] = "Load |cffff9015Note Loader Default|r as personal and clear",
+    --     ["value"] = "load_personal_clear",
+    --     ["onClick"] = function()
+    --         MRT_NL_DB.postAction = "load_personal_clear"
+    --     end,
+    -- },
 })
 
 -------------------------------------------------
@@ -305,8 +314,7 @@ mainFrame:SetScript("OnShow", function()
     mainFrame:SetScale(MRT_NL_DB.scale)
     LoadNoteNames()
     postActionDD:SetSelectedValue(MRT_NL_DB.postAction)
-    -- autoShowCB:SetChecked(MRT_NL_DB.autoshow)
-    -- autoHideCB:SetChecked(MRT_NL_DB.autohide)
+    clearMismatchedCB:SetChecked(MRT_NL_DB.clearMismatched)
 end)
 
 mainFrame:SetScript("OnHide", function()
