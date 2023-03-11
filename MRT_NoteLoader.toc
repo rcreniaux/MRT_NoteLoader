@@ -1,6 +1,6 @@
 ## Interface: 100005
 ## Title: MRT Note Loader
-## Version: 1.0.2
+## Version: 1.0.3
 ## Author: 篠崎
 ## X-Flavor: Mainline
 ## SavedVariables: MRT_NL_DB

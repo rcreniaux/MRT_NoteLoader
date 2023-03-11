@@ -178,31 +178,39 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
     MRT_NL:Fire("ENCOUNTER_START", encounterID, encounterName)
     
     if MRT_NL.autoload.eid[encounterID] then
-        MRT_NL:LoadNote(MRT_NL.autoload.eid[encounterID], true)
         isEncounterInProgress = true
+        MRT_NL:LoadNote(MRT_NL.autoload.eid[encounterID], false, true)
     end
     if MRT_NL.autoload.eid_p[encounterID] then
-        MRT_NL:LoadNote(MRT_NL.autoload.eid_p[encounterID], true, true)
         isEncounterInProgress = true
+        MRT_NL:LoadNote(MRT_NL.autoload.eid_p[encounterID], true, true)
     end
     if MRT_NL.autoload.ename[encounterName] then
-        MRT_NL:LoadNote(MRT_NL.autoload.ename[encounterName], true)
         isEncounterInProgress = true
+        MRT_NL:LoadNote(MRT_NL.autoload.ename[encounterName], false, true)
     end
     if MRT_NL.autoload.ename_p[encounterName] then
-        MRT_NL:LoadNote(MRT_NL.autoload.ename_p[encounterName], true, true)
         isEncounterInProgress = true
+        MRT_NL:LoadNote(MRT_NL.autoload.ename_p[encounterName], true, true)
+    end
+
+    if isEncounterInProgress then
+        -- call MRT's ENCOUNTER_START
+        GMRT.A.Note.main:ENCOUNTER_START(encounterID, encounterName, difficultyID, groupSize)
     end
 end
 
 function eventFrame:ENCOUNTER_END()
-    isEncounterInProgress = false
-    if MRT_NL_DB.autohide and showByThisAddon then
-        if zoneFound then -- reload note for this zone
-            eventFrame:ZONE_CHANGED()
-        else
-            GMRT.A.Note:Disable()
-            showByThisAddon = false
+    -- add a delay, wait for MRT's ENCOUNTER_END
+    C_Timer.After(1, function()
+        isEncounterInProgress = false
+        if MRT_NL_DB.autohide and showByThisAddon then
+            if zoneFound then -- reload note for this zone
+                eventFrame:ZONE_CHANGED()
+            else
+                GMRT.A.Note:Disable()
+                showByThisAddon = false
+            end
         end
-    end
+    end)
 end
