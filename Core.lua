@@ -16,8 +16,7 @@ function eventFrame:ADDON_LOADED(addon)
 
         if type(MRT_NL_DB) ~= "table" then MRT_NL_DB = {} end
         if type(MRT_NL_DB.scale) ~= "number" then MRT_NL_DB.scale = 1 end
-        if type(MRT_NL_DB.autoshow) ~= "boolean" then MRT_NL_DB.autoshow = true end
-        if type(MRT_NL_DB.autohide) ~= "boolean" then MRT_NL_DB.autohide = true end
+        if type(MRT_NL_DB.postAction) ~= "string" then MRT_NL_DB.postAction = "hide" end
         if type(MRT_NL_DB.autoload) ~= "table" then
             MRT_NL_DB.autoload = {
                 -- {
@@ -37,10 +36,24 @@ function eventFrame:ADDON_LOADED(addon)
         eventFrame:RegisterEvent("ENCOUNTER_END")
 
         -- button
-        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {127, 20})
-        b:SetPoint("TOPRIGHT", 0, -45)
+        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {140, 20})
+        b:SetPoint("TOPLEFT", 80, 7)
         b:SetScript("OnClick", function()
             MRT_NoteLoader:Show()
+        end)
+
+        -- NL_DEFAULT
+        if VMRT.Note.BlackNames[1] ~= "Note Loader Default" then
+            tinsert(VMRT.Note.BlackNames, 1, "Note Loader Default")
+            tinsert(VMRT.Note.Black, 1, "")
+        end
+
+        -- restore MRT Note alpha
+        hooksecurefunc(GMRT.A.Note.frame, "UpdateText", function()
+            GMRT.A.Note.frame:SetAlpha(VMRT.Note.Alpha and (VMRT.Note.Alpha / 100) or 1)
+            if not VMRT.Note.Fix then
+                GMRT.A.Note.frame:EnableMouse(true)
+            end
         end)
     end
 end
@@ -107,12 +120,8 @@ function MRT_NL:LoadNote(title, isPersonal, force)
         return
     end
     
-    if MRT_NL_DB.autoshow then
-        if not VMRT.Note.enabled then
-            GMRT.A.Note:Enable()
-        end
-    elseif not VMRT.Note.enabled then
-        return
+    if not VMRT.Note.enabled then
+        GMRT.A.Note:Enable()
     end
 
     if isPersonal then
@@ -125,6 +134,30 @@ function MRT_NL:LoadNote(title, isPersonal, force)
     end
 
     showByThisAddon = true
+end
+
+-------------------------------------------------
+-- after encounter / zone changed
+-------------------------------------------------
+local function HideOrLoad()
+    showByThisAddon = false
+    if MRT_NL_DB.postAction == "hide" then
+        GMRT.A.Note.frame:SetAlpha(0)
+        GMRT.A.Note.frame:EnableMouse(false)
+
+    elseif MRT_NL_DB.postAction == "load" or MRT_NL_DB.postAction == "loadAndClear" then
+        if VMRT.Note.BlackNames[1] == "Note Loader Default" then
+            GMRT.A.Note.frame:Save(1)
+        end
+        
+        if MRT_NL_DB.postAction == "loadAndClear" then
+            VMRT.Note.SelfText = ""
+            GMRT.A.Note.frame:UpdateText()
+        end
+
+    else
+        -- do nothing
+    end
 end
 
 -------------------------------------------------
@@ -155,9 +188,8 @@ function eventFrame:ZONE_CHANGED()
         zoneFound = true
     end
 
-    if MRT_NL_DB.autohide and showByThisAddon and not isEncounterInProgress and not zoneFound then
-        GMRT.A.Note:Disable()
-        showByThisAddon = false
+    if showByThisAddon and not isEncounterInProgress and not zoneFound then
+        HideOrLoad()
     end
 end
 
@@ -201,16 +233,12 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
 end
 
 function eventFrame:ENCOUNTER_END()
-    -- add a delay, wait for MRT's ENCOUNTER_END
-    C_Timer.After(1, function()
-        isEncounterInProgress = false
-        if MRT_NL_DB.autohide and showByThisAddon then
-            if zoneFound then -- reload note for this zone
-                eventFrame:ZONE_CHANGED()
-            else
-                GMRT.A.Note:Disable()
-                showByThisAddon = false
-            end
+    isEncounterInProgress = false
+    if showByThisAddon then
+        if zoneFound then -- reload note for this zone
+            eventFrame:ZONE_CHANGED()
+        else
+            HideOrLoad()
         end
-    end)
+    end
 end

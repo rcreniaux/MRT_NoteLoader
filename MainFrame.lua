@@ -5,7 +5,7 @@ local currentZone, currentEncounterID, currentEncounterName
 local UpdateButtons, LoadList, LoadNoteNames
 local isPersonal
 
-local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 560, "DIALOG")
+local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 586, "DIALOG")
 mainFrame:Hide()
 mainFrame:ClearAllPoints()
 mainFrame:SetPoint("TOPLEFT", 200, -200)
@@ -113,7 +113,7 @@ personalCB:SetPoint("BOTTOMLEFT", noteRefreshBtn, "BOTTOMRIGHT", 7, 3)
 
 LoadNoteNames = function()
     local items = {}
-    for i in pairs(VMRT.Note.Black) do
+    for i = 2, #VMRT.Note.Black do
         tinsert(items, {
             ["text"] = VMRT.Note.BlackNames[i] and VMRT.Note.BlackNames[i] or i,
             ["onClick"] = function()
@@ -210,7 +210,7 @@ end)
 -------------------------------------------------
 local listPane = CreateFrame("Frame", nil, mainFrame)
 listPane:SetPoint("TOPLEFT", infoPane, "BOTTOMLEFT", 0, -7)
-listPane:SetPoint("BOTTOMRIGHT", 0, 36)
+listPane:SetPoint("BOTTOMRIGHT", 0, 62)
 W:CreateScrollFrame(listPane)
 
 LoadList = function()
@@ -250,15 +250,52 @@ optionsPane:SetPoint("BOTTOMRIGHT")
 optionsPane:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
 optionsPane:SetBackdropBorderColor(0, 0, 0, 1)
 
-local autoShowCB = W:CreateCheckButton(optionsPane, "Auto enable MRT note", function(checked)
-    MRT_NL_DB.autoshow = checked
-end)
-autoShowCB:SetPoint("BOTTOMLEFT", 7, 7)
+-- local autoShowCB = W:CreateCheckButton(optionsPane, "Auto enable MRT note", function(checked)
+--     MRT_NL_DB.autoshow = checked
+-- end)
+-- autoShowCB:SetPoint("BOTTOMLEFT", 7, 7)
 
-local autoHideCB = W:CreateCheckButton(optionsPane, "Auto disable MRT note", function(checked)
-    MRT_NL_DB.autohide = checked
-end)
-autoHideCB:SetPoint("BOTTOMLEFT", 185, 7)
+-- local autoHideCB = W:CreateCheckButton(optionsPane, "Auto disable MRT note", function(checked)
+--     MRT_NL_DB.autohide = checked
+-- end)
+-- autoHideCB:SetPoint("BOTTOMLEFT", 185, 7)
+
+local postActionText = optionsPane:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_ACCENT")
+postActionText:SetPoint("TOPLEFT", 7, -7)
+postActionText:SetText("After encounter ends / zone changes")
+
+local postActionDD = W:CreateDropdown(optionsPane, 356)
+postActionDD:SetPoint("TOPLEFT", optionsPane, 7, -27)
+postActionDD:SetItems({
+    {
+        ["text"] = "Do nothing",
+        ["value"] = "",
+        ["onClick"] = function()
+            MRT_NL_DB.postAction = ""
+        end,
+    },
+    {
+        ["text"] = "Hide",
+        ["value"] = "hide",
+        ["onClick"] = function()
+            MRT_NL_DB.postAction = "hide"
+        end,
+    },
+    {
+        ["text"] = "Load |cffff9015Note Loader Default|r",
+        ["value"] = "load",
+        ["onClick"] = function()
+            MRT_NL_DB.postAction = "load"
+        end,
+    },
+    {
+        ["text"] = "Load |cffff9015Note Loader Default|r and clear personal",
+        ["value"] = "loadAndClear",
+        ["onClick"] = function()
+            MRT_NL_DB.postAction = "loadAndClear"
+        end,
+    },
+})
 
 -------------------------------------------------
 -- onshow
@@ -267,8 +304,9 @@ mainFrame:SetScript("OnShow", function()
     scaleSlider:SetValue(MRT_NL_DB.scale)
     mainFrame:SetScale(MRT_NL_DB.scale)
     LoadNoteNames()
-    autoShowCB:SetChecked(MRT_NL_DB.autoshow)
-    autoHideCB:SetChecked(MRT_NL_DB.autohide)
+    postActionDD:SetSelectedValue(MRT_NL_DB.postAction)
+    -- autoShowCB:SetChecked(MRT_NL_DB.autoshow)
+    -- autoHideCB:SetChecked(MRT_NL_DB.autohide)
 end)
 
 mainFrame:SetScript("OnHide", function()
