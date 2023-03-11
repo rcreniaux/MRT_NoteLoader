@@ -16,8 +16,8 @@ function eventFrame:ADDON_LOADED(addon)
 
         if type(MRT_NL_DB) ~= "table" then MRT_NL_DB = {} end
         if type(MRT_NL_DB.scale) ~= "number" then MRT_NL_DB.scale = 1 end
-        if type(MRT_NL_DB.clearMismatched) ~= "boolean" then MRT_NL_DB.clearMismatched = true end
-        if type(MRT_NL_DB.postAction) ~= "string" then MRT_NL_DB.postAction = "hide" end
+        if type(MRT_NL_DB.clearMismatched) ~= "boolean" then MRT_NL_DB.clearMismatched = false end
+        if type(MRT_NL_DB.postAction) ~= "string" then MRT_NL_DB.postAction = "" end
         if type(MRT_NL_DB.autoload) ~= "table" then
             MRT_NL_DB.autoload = {
                 -- {
@@ -275,6 +275,11 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
 
     if MRT_NL_DB.clearMismatched then
         ClearMismatched()
+    end
+
+    if isEncounterInProgress then
+        -- call MRT's ENCOUNTER_START
+        GMRT.A.Note.main:ENCOUNTER_START(encounterID, encounterName, difficultyID, groupSize)
     end
 end
 
