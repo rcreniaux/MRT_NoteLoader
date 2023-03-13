@@ -9,6 +9,8 @@ end)
 -------------------------------------------------
 -- loaded
 -------------------------------------------------
+-- local visibilityUpdateRequired
+
 eventFrame:RegisterEvent("ADDON_LOADED")
 function eventFrame:ADDON_LOADED(addon)
     if addon == addonName then
@@ -49,13 +51,19 @@ function eventFrame:ADDON_LOADED(addon)
             tinsert(VMRT.Note.Black, 1, "")
         end
 
-        -- restore MRT Note alpha
-        hooksecurefunc(GMRT.A.Note.frame, "UpdateText", function()
-            GMRT.A.Note.frame:SetAlpha(VMRT.Note.Alpha and (VMRT.Note.Alpha / 100) or 1)
-            if not VMRT.Note.Fix then
-                GMRT.A.Note.frame:EnableMouse(true)
-            end
-        end)
+        -- restore MRT visibility
+        -- hooksecurefunc(GMRT.A.Note.frame, "UpdateText", function()
+        --     print("UpdateVisibility?", visibilityUpdateRequired)
+        --     if visibilityUpdateRequired then
+        --         visibilityUpdateRequired = nil
+        --         print("UpdateVisibility_UpdateText")
+        --         GMRT.A.Note:Visibility()
+        --     end
+        --     -- GMRT.A.Note.frame:SetAlpha(VMRT.Note.Alpha and (VMRT.Note.Alpha / 100) or 1)
+        --     -- if not VMRT.Note.Fix then
+        --     --     GMRT.A.Note.frame:EnableMouse(true)
+        --     -- end
+        -- end)
     end
 end
 
@@ -137,6 +145,7 @@ function MRT_NL:LoadNote(title, isPersonal, force)
         MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", title))
     end
 
+    GMRT.A.Note.frame:Show()
     showByThisAddon = true
 end
 
@@ -147,8 +156,10 @@ local function PostAction()
     showByThisAddon = false
 
     if MRT_NL_DB.postAction == "hide" then
-        GMRT.A.Note.frame:SetAlpha(0)
-        GMRT.A.Note.frame:EnableMouse(false)
+        -- visibilityUpdateRequired = true
+        GMRT.A.Note.frame:Hide()
+        -- GMRT.A.Note.frame:SetAlpha(0)
+        -- GMRT.A.Note.frame:EnableMouse(false)
 
     elseif MRT_NL_DB.postAction == "load" or MRT_NL_DB.postAction == "load_clear" then
         if VMRT.Note.BlackNames[1] == "Note Loader Default" then
