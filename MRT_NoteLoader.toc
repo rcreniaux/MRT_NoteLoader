@@ -10,6 +10,9 @@
 
 CallbackHandler.lua
 
+Locales/enUS.lua
+Locales/zhCN.lua
+
 Core.lua
 Widgets.lua
 

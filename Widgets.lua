@@ -1,7 +1,9 @@
 local _, addon = ...
 local addonName = "MRT_NL"
 addon.widgets = {}
+
 local W = addon.widgets
+local L = addon.L
 
 local accentColor = {s="|cffff9015", t={1, 0.56, 0.08, 0.5}}
 
@@ -784,8 +786,8 @@ highlightTexture:Hide()
 
 list:SetScript("OnShow", function()
     -- list:SetScale(list.menu:GetEffectiveScale())
-    list:SetFrameStrata(list.menu:GetFrameStrata())
-    list:SetFrameLevel(77) -- top of its strata
+    list:SetFrameStrata("FULLSCREEN")
+    -- list:SetFrameLevel(77) -- top of its strata
 end)
 list:SetScript("OnHide", function() list:Hide() end)
 
@@ -1117,7 +1119,7 @@ function W:CreateAutoloadButton(parent, type, value, note, isPersonal)
     typeText:SetJustifyH("LEFT")
     typeText:SetWidth(50)
     typeText:SetWordWrap(false)
-    typeText:SetText(type)
+    typeText:SetText(L[type])
 
     local valueText = b:CreateFontString(nil, "OVERLAY", font_normal_name)
     valueText:SetPoint("LEFT", typeText, "RIGHT", 10, 0)

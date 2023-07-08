@@ -1,5 +1,6 @@
 local _, MRT_NL = ...
 local W = MRT_NL.widgets
+local L = MRT_NL.L
 
 local currentZone, currentEncounterID, currentEncounterName
 local UpdateButtons, LoadList, LoadNoteNames
@@ -46,7 +47,7 @@ zoneEB:SetPoint("TOPLEFT", 7, -10)
 
 local zoneText = zoneEB:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_NORMAL")
 zoneText:SetPoint("RIGHT", -2, 0)
-zoneText:SetText("zone")
+zoneText:SetText(L["zone"])
 zoneText:SetTextColor(0.7, 0.7, 0.7, 0.7)
 
 local zoneRefreshBtn = W:CreateButton(infoPane, "", "accent", {20, 20})
@@ -62,7 +63,7 @@ idEB:SetPoint("TOPLEFT", zoneEB, "BOTTOMLEFT", 0, -7)
 
 local idText = idEB:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_NORMAL")
 idText:SetPoint("RIGHT", -2, 0)
-idText:SetText("encounterID")
+idText:SetText(L["encounterID"])
 idText:SetTextColor(0.7, 0.7, 0.7, 0.7)
 
 -- encounterName
@@ -71,7 +72,7 @@ nameEB:SetPoint("TOPLEFT", idEB, "BOTTOMLEFT", 0, -7)
 
 local nameText = nameEB:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_NORMAL")
 nameText:SetPoint("RIGHT", -2, 0)
-nameText:SetText("encounterName")
+nameText:SetText(L["encounterName"])
 nameText:SetTextColor(0.7, 0.7, 0.7, 0.7)
 
 local encounterRefreshBtn = W:CreateButton(infoPane, "", "accent", {20, 20})
@@ -91,7 +92,7 @@ noteDD:SetPoint("TOPLEFT", nameEB, "BOTTOMLEFT", 0, -7)
 
 local noteText = noteDD:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_NORMAL")
 noteText:SetPoint("RIGHT", -20, 0)
-noteText:SetText("note")
+noteText:SetText(L["note"])
 noteText:SetTextColor(0.7, 0.7, 0.7, 0.7)
 
 local noteRefreshBtn = W:CreateButton(infoPane, "", "accent", {20, 20})
@@ -102,7 +103,7 @@ noteRefreshBtn:SetScript("OnClick", function()
 end)
 W:RegisterForCloseDropdown(noteRefreshBtn)
 
-local personalCB = W:CreateCheckButton(infoPane, "|cff90ee90Personal", function(checked)
+local personalCB = W:CreateCheckButton(infoPane, "|cff90ee90"..L["Personal"], function(checked)
     if checked then
         isPersonal = true
     else
@@ -130,7 +131,7 @@ end
 -- create
 -------------------------------------------------
 -- add zone
-local addZoneBtn = W:CreateButton(infoPane, "+ zone", "accent", {114, 20})
+local addZoneBtn = W:CreateButton(infoPane, "+ "..L["zone"], "accent", {114, 20})
 addZoneBtn:SetEnabled(false)
 addZoneBtn:SetPoint("TOPLEFT", noteDD, "BOTTOMLEFT", 0, -7)
 zoneEB:SetScript("OnTextChanged", function()
@@ -147,7 +148,7 @@ addZoneBtn:SetScript("OnClick", function()
 end)
 
 -- add encounterID
-local addIdBtn = W:CreateButton(infoPane, "+ eid", "accent", {114, 20})
+local addIdBtn = W:CreateButton(infoPane, "+ "..L["eid"], "accent", {114, 20})
 addIdBtn:SetEnabled(false)
 addIdBtn:SetPoint("TOPLEFT", addZoneBtn, "TOPRIGHT", 7, 0)
 idEB:SetScript("OnTextChanged", function()
@@ -164,7 +165,7 @@ addIdBtn:SetScript("OnClick", function()
 end)
 
 -- add encounterName
-local addNameBtn = W:CreateButton(infoPane, "+ ename", "accent", {114, 20})
+local addNameBtn = W:CreateButton(infoPane, "+ "..L["ename"], "accent", {114, 20})
 addNameBtn:SetEnabled(false)
 addNameBtn:SetPoint("TOPLEFT", addIdBtn, "TOPRIGHT", 7, 0)
 nameEB:SetScript("OnTextChanged", function()
@@ -250,34 +251,34 @@ optionsPane:SetPoint("BOTTOMRIGHT")
 optionsPane:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
 optionsPane:SetBackdropBorderColor(0, 0, 0, 1)
 
-local clearMismatchedCB = W:CreateCheckButton(optionsPane, "Clear mismatched normal / personal note", function(checked)
+local clearMismatchedCB = W:CreateCheckButton(optionsPane, L["Clear mismatched note for current zone / encounter"], function(checked)
     MRT_NL_DB.clearMismatched = checked
 end)
 clearMismatchedCB:SetPoint("TOPLEFT", 7, -7)
 
 local postActionText = optionsPane:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_ACCENT")
 postActionText:SetPoint("TOPLEFT", 7, -34)
-postActionText:SetText("After encounter ends / zone changes")
+postActionText:SetText(L["After zone changes / encounter ends"])
 
 local postActionDD = W:CreateDropdown(optionsPane, 356)
 postActionDD:SetPoint("TOPLEFT", optionsPane, 7, -52)
 postActionDD:SetItems({
     {
-        ["text"] = "Do nothing",
+        ["text"] = L["Do nothing"],
         ["value"] = "",
         ["onClick"] = function()
             MRT_NL_DB.postAction = ""
         end,
     },
     {
-        ["text"] = "Hide",
+        ["text"] = L["Hide"],
         ["value"] = "hide",
         ["onClick"] = function()
             MRT_NL_DB.postAction = "hide"
         end,
     },
     {
-        ["text"] = "Load |cffff9015Note Loader Default|r",
+        ["text"] = L["Load %s"]:format("|cffff9015Note Loader Default|r"),
         ["value"] = "load",
         ["onClick"] = function()
             MRT_NL_DB.postAction = "load"
@@ -291,7 +292,7 @@ postActionDD:SetItems({
     --     end,
     -- },
     {
-        ["text"] = "Load |cffff9015Note Loader Default|r (personal)",
+        ["text"] = L["Load %s (personal)"]:format("|cffff9015Note Loader Default|r"),
         ["value"] = "load_personal",
         ["onClick"] = function()
             MRT_NL_DB.postAction = "load_personal"

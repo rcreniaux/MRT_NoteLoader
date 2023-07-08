@@ -1,6 +1,8 @@
 local addonName, MRT_NL = ...
 _G.MRT_NL = MRT_NL
 
+local L = MRT_NL.L
+
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, ...)
     self[event](self, ...)
@@ -139,10 +141,10 @@ function MRT_NL:LoadNote(title, isPersonal, force)
     if isPersonal then
         VMRT.Note.SelfText = VMRT.Note.Black[index]
         GMRT.A.Note.frame:UpdateText()
-        MRT_NL:Print(string.format("personal note loaded |cffff9015%s|r.", title))
+        MRT_NL:Print(string.format(L["personal note loaded"].." |cffff9015%s|r.", title))
     else
         GMRT.A.Note.frame:Save(index)
-        MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", title))
+        MRT_NL:Print(string.format(L["note loaded"].." |cffff9015%s|r.", title))
     end
 
     GMRT.A.Note.frame:Show()
@@ -164,7 +166,7 @@ local function PostAction()
     elseif MRT_NL_DB.postAction == "load" or MRT_NL_DB.postAction == "load_clear" then
         if VMRT.Note.BlackNames[1] == "Note Loader Default" then
             GMRT.A.Note.frame:Save(1)
-            MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", "Default"))
+            MRT_NL:Print(string.format(L["note loaded"].." |cffff9015%s|r.", L["Default"]))
         end
         if MRT_NL_DB.postAction == "load_clear" then
             VMRT.Note.SelfText = ""
@@ -174,7 +176,7 @@ local function PostAction()
     elseif MRT_NL_DB.postAction == "load_personal" or MRT_NL_DB.postAction == "load_personal_clear" then
         if VMRT.Note.BlackNames[1] == "Note Loader Default" then
             VMRT.Note.SelfText = VMRT.Note.Black[1]
-            MRT_NL:Print(string.format("note loaded |cffff9015%s|r.", "Default"))
+            MRT_NL:Print(string.format(L["personal note loaded"].." |cffff9015%s|r.", L["Default"]))
         end
         if MRT_NL_DB.postAction == "load_personal_clear" then
             VMRT.Note.Text1 = ""
