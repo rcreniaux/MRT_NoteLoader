@@ -3,6 +3,8 @@ _G.MRT_NL = MRT_NL
 
 local L = MRT_NL.L
 
+local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, ...)
     self[event](self, ...)
@@ -70,6 +72,8 @@ function eventFrame:ADDON_LOADED(addon)
         --     --     GMRT.A.Note.frame:EnableMouse(true)
         --     -- end
         -- end)
+
+        MRT_NL.version = GetAddOnMetadata(addonName, "version")
     end
 end
 
@@ -163,9 +167,13 @@ function MRT_NL:SendNote(isPersonal)
         note = VMRT.Note.Text1
     end
 
-    if type(note) ~= "string" or strtrim(note) == "" then return end
-
-    MRT_NL:SendChatMessage(note)
+    if type(note) == "string" and strtrim(note) ~= "" then
+        MRT_NL:SendChatMessage(note)
+    else
+        C_Timer.After(0.2, function()
+            MRT_NL_Send:SetEnabled(true)
+        end)
+    end
 end
 
 -------------------------------------------------

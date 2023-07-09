@@ -5,7 +5,7 @@ local W = MRT_NL.widgets
 -- Tooltip
 -----------------------------------------
 local function CreateTooltip(name, hasIcon)
-    local tooltip = CreateFrame("GameTooltip", name, nil, "MRTNLTooltipTemplate,BackdropTemplate")
+    local tooltip = CreateFrame("GameTooltip", name, UIParent, "MRTNLTooltipTemplate,BackdropTemplate")
     tooltip:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
     tooltip:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
     tooltip:SetBackdropBorderColor(W:GetAccentColorRGB())

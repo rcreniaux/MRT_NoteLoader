@@ -35,7 +35,7 @@ end
 
 local font_title_name = strupper(addonName).."_FONT_ACCENT_TITLE"
 local font_title = CreateFont(font_title_name)
-font_title:SetFont(GameFontNormal:GetFont(), 14, "")
+font_title:SetFont(GameFontNormal:GetFont(), 13, "")
 font_title:SetTextColor(accentColor.t[1], accentColor.t[2], accentColor.t[3])
 font_title:SetShadowColor(0, 0, 0)
 font_title:SetShadowOffset(1, -1)
@@ -43,7 +43,7 @@ font_title:SetJustifyH("CENTER")
 
 local font_normal_name = strupper(addonName).."_FONT_NORMAL"
 local font_normal = CreateFont(font_normal_name)
-font_normal:SetFont(GameFontNormal:GetFont(), 13, "")
+font_normal:SetFont(GameFontNormal:GetFont(), 12, "")
 font_normal:SetTextColor(1, 1, 1, 1)
 font_normal:SetShadowColor(0, 0, 0)
 font_normal:SetShadowOffset(1, -1)
@@ -51,7 +51,7 @@ font_normal:SetJustifyH("CENTER")
 
 local font_disable_name = strupper(addonName).."_FONT_DISABLE"
 local font_disable = CreateFont(font_disable_name)
-font_disable:SetFont(GameFontNormal:GetFont(), 13, "")
+font_disable:SetFont(GameFontNormal:GetFont(), 12, "")
 font_disable:SetTextColor(0.4, 0.4, 0.4, 1)
 font_disable:SetShadowColor(0, 0, 0)
 font_disable:SetShadowOffset(1, -1)
@@ -59,7 +59,7 @@ font_disable:SetJustifyH("CENTER")
 
 local font_accent_name = strupper(addonName).."_FONT_ACCENT"
 local font_accent = CreateFont(font_accent_name)
-font_accent:SetFont(GameFontNormal:GetFont(), 13, "")
+font_accent:SetFont(GameFontNormal:GetFont(), 12, "")
 font_accent:SetTextColor(accentColor.t[1], accentColor.t[2], accentColor.t[3])
 font_accent:SetShadowColor(0, 0, 0)
 font_accent:SetShadowOffset(1, -1)

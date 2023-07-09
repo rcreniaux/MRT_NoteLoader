@@ -360,6 +360,8 @@ mainFrame:SetScript("OnShow", function()
     postActionDD:SetSelectedValue(MRT_NL_DB.postAction)
     clearMismatchedCB:SetChecked(MRT_NL_DB.clearMismatched)
     showSendCB:SetChecked(MRT_NL_DB.showSendButton)
+
+    mainFrame.header.text:SetText("MRT Note Loader " .. MRT_NL.version)
 end)
 
 mainFrame:SetScript("OnHide", function()
