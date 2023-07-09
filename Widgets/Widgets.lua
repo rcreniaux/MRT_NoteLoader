@@ -5,7 +5,15 @@ addon.widgets = {}
 local W = addon.widgets
 local L = addon.L
 
-local accentColor = {s="|cffff9015", t={1, 0.56, 0.08, 0.5}}
+local accentColor = {s="ffff9015", t={1, 0.56, 0.08, 0.5}}
+
+function W:WrapTextInAccentColor(text)
+    return WrapTextInColorCode(text, accentColor.s)
+end
+
+function W:GetAccentColorRGB()
+    return unpack(accentColor.t)
+end
 
 -------------------------------------------------
 -- fonts

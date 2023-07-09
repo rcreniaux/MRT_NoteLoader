@@ -6,7 +6,7 @@ local currentZone, currentEncounterID, currentEncounterName
 local UpdateButtons, LoadList, LoadNoteNames
 local isPersonal
 
-local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 610, "DIALOG")
+local mainFrame =  W:CreateMovableFrame("MRT Note Loader", "MRT_NoteLoader", 370, 592, "DIALOG")
 mainFrame:Hide()
 mainFrame:ClearAllPoints()
 mainFrame:SetPoint("TOPLEFT", 200, -200)
@@ -31,6 +31,26 @@ mrtBtn:SetScript("OnClick", function()
     MRTOptionsFrame:Show()
     MRTOptionsFrame:SetPage(MRTOptionsFrameNote)
 end)
+
+-------------------------------------------------
+-- send button
+-------------------------------------------------
+function MRT_NL:ShowSendButton(show)
+    if show then
+        if not MRT_NL_Send then
+            MRT_NL_Send = W:CreateButton(MRTNote, L["Send"], "blue", {50, 20})
+            MRT_NL_Send:SetPoint("BOTTOMLEFT", MRTNote, "TOPLEFT")
+            MRT_NL_Send:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            MRT_NL_Send:SetScript("OnClick", function(self, button)
+                MRT_NL_Send:SetEnabled(false)
+                MRT_NL:SendNote(button == "RightButton")
+            end)
+        end
+        MRT_NL_Send:Show()
+    elseif MRT_NL_Send then
+        MRT_NL_Send:Hide()
+    end
+end
 
 -------------------------------------------------
 -- info
@@ -211,7 +231,7 @@ end)
 -------------------------------------------------
 local listPane = CreateFrame("Frame", nil, mainFrame)
 listPane:SetPoint("TOPLEFT", infoPane, "BOTTOMLEFT", 0, -7)
-listPane:SetPoint("BOTTOMRIGHT", 0, 86)
+listPane:SetPoint("BOTTOMRIGHT", 0, 122)
 W:CreateScrollFrame(listPane)
 
 LoadList = function()
@@ -251,17 +271,12 @@ optionsPane:SetPoint("BOTTOMRIGHT")
 optionsPane:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
 optionsPane:SetBackdropBorderColor(0, 0, 0, 1)
 
-local clearMismatchedCB = W:CreateCheckButton(optionsPane, L["Clear mismatched note for current zone / encounter"], function(checked)
-    MRT_NL_DB.clearMismatched = checked
-end)
-clearMismatchedCB:SetPoint("TOPLEFT", 7, -7)
-
 local postActionText = optionsPane:CreateFontString(nil, "OVERLAY", "MRT_NL_FONT_ACCENT")
-postActionText:SetPoint("TOPLEFT", 7, -34)
+postActionText:SetPoint("TOPLEFT", 7, -10)
 postActionText:SetText(L["After zone changes / encounter ends"])
 
 local postActionDD = W:CreateDropdown(optionsPane, 356)
-postActionDD:SetPoint("TOPLEFT", optionsPane, 7, -52)
+postActionDD:SetPoint("TOPLEFT", 7, -28)
 postActionDD:SetItems({
     {
         ["text"] = L["Do nothing"],
@@ -307,6 +322,34 @@ postActionDD:SetItems({
     -- },
 })
 
+local clearMismatchedCB = W:CreateCheckButton(optionsPane, L["Clear mismatched note for current zone / encounter"], function(checked)
+    MRT_NL_DB.clearMismatched = checked
+end)
+clearMismatchedCB:SetPoint("TOPLEFT", 7, -62)
+
+local showSendCB = W:CreateCheckButton(optionsPane, L["Show a %s button next to Note frame"]:format(W:WrapTextInAccentColor(L["Send"])), function(checked)
+    MRT_NL_DB.showSendButton = checked
+    MRT_NL:ShowSendButton(checked)
+end)
+showSendCB:SetPoint("TOPLEFT", 7, -90)
+
+showSendCB:HookScript("OnEnter", function()
+    MRT_NL_Tooltip:SetOwner(showSendCB, "ANCHOR_NONE")
+    MRT_NL_Tooltip:SetPoint("BOTTOMLEFT", showSendCB, "TOPLEFT", 0, 3)
+    MRT_NL_Tooltip:AddLine(W:WrapTextInAccentColor(L["Send Button"]))
+    MRT_NL_Tooltip:AddLine("|cffffffff"..L["Left-Click: send current note"])
+    MRT_NL_Tooltip:AddLine("|cffffffff"..L["Right-Click: send current personal note"])
+    MRT_NL_Tooltip:AddLine(" ")
+    MRT_NL_Tooltip:AddLine(W:WrapTextInAccentColor(L["Or you can use these slash commands:"]))
+    MRT_NL_Tooltip:AddLine("|cffffffff".."/mrtnl send, /nl send")
+    MRT_NL_Tooltip:AddLine("|cffffffff".."/mrtnl sendp, /nl sendp")
+    MRT_NL_Tooltip:Show()
+end)
+
+showSendCB:HookScript("OnLeave", function()
+    MRT_NL_Tooltip:Hide()
+end)
+
 -------------------------------------------------
 -- onshow
 -------------------------------------------------
@@ -316,6 +359,7 @@ mainFrame:SetScript("OnShow", function()
     LoadNoteNames()
     postActionDD:SetSelectedValue(MRT_NL_DB.postAction)
     clearMismatchedCB:SetChecked(MRT_NL_DB.clearMismatched)
+    showSendCB:SetChecked(MRT_NL_DB.showSendButton)
 end)
 
 mainFrame:SetScript("OnHide", function()
@@ -334,10 +378,17 @@ end)
 SLASH_MRT_NOTE_LOADER1 = "/mrtnl"
 SLASH_MRT_NOTE_LOADER2 = "/nl"
 function SlashCmdList.MRT_NOTE_LOADER(msg, editbox)
-    -- local command, rest = msg:match("^(%S*)%s*(.-)$")
-    if mainFrame:IsShown() then
-        mainFrame:Hide()
+    local command, rest = msg:match("^(%S*)%s*(.-)$")
+
+    if command == "send" then
+        MRT_NL:SendNote()
+    elseif command == "sendp" then
+        MRT_NL:SendNote(true)
     else
-        mainFrame:Show()
+        if mainFrame:IsShown() then
+            mainFrame:Hide()
+        else
+            mainFrame:Show()
+        end
     end
 end

@@ -1,19 +1,20 @@
-## Interface: 100005
+## Interface: 100100
 ## Title: MRT Note Loader
-## Version: 1.1.0
-## Author: 篠崎
+## Version: 1.2.0
+## Author: enderneko
 ## X-Flavor: Mainline
 ## SavedVariables: MRT_NL_DB
 ## Dependencies: MRT
 
 ## X-Curse-Project-ID: 834919
 
-CallbackHandler.lua
+Libs/LoadLibs.xml
 
 Locales/enUS.lua
 Locales/zhCN.lua
 
 Core.lua
-Widgets.lua
+Utils.lua
+Widgets/LoadWidgets.xml
 
 MainFrame.lua

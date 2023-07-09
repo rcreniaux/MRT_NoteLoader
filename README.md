@@ -9,3 +9,5 @@
 ## Slash Commands
 
 /mrtnl, /nl
+/mrtnl send, /nl send
+/mrtnl sendp, /nl sendp

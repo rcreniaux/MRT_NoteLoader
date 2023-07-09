@@ -21,6 +21,7 @@ function eventFrame:ADDON_LOADED(addon)
         if type(MRT_NL_DB) ~= "table" then MRT_NL_DB = {} end
         if type(MRT_NL_DB.scale) ~= "number" then MRT_NL_DB.scale = 1 end
         if type(MRT_NL_DB.clearMismatched) ~= "boolean" then MRT_NL_DB.clearMismatched = false end
+        if type(MRT_NL_DB.showSendButton) ~= "boolean" then MRT_NL_DB.showSendButton = false end
         if type(MRT_NL_DB.postAction) ~= "string" then MRT_NL_DB.postAction = "" end
         if type(MRT_NL_DB.autoload) ~= "table" then
             MRT_NL_DB.autoload = {
@@ -52,6 +53,9 @@ function eventFrame:ADDON_LOADED(addon)
             tinsert(VMRT.Note.BlackNames, 1, "Note Loader Default")
             tinsert(VMRT.Note.Black, 1, "")
         end
+
+        -- send button
+        MRT_NL:ShowSendButton(MRT_NL_DB.showSendButton)
 
         -- restore MRT visibility
         -- hooksecurefunc(GMRT.A.Note.frame, "UpdateText", function()
@@ -149,6 +153,19 @@ function MRT_NL:LoadNote(title, isPersonal, force)
 
     GMRT.A.Note.frame:Show()
     showByThisAddon = true
+end
+
+function MRT_NL:SendNote(isPersonal)
+    local note
+    if isPersonal then
+        note = VMRT.Note.SelfText
+    else
+        note = VMRT.Note.Text1
+    end
+
+    if type(note) ~= "string" or strtrim(note) == "" then return end
+
+    MRT_NL:SendChatMessage(note)
 end
 
 -------------------------------------------------
