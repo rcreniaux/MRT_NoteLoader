@@ -311,8 +311,10 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
         encounterPersonal = true
     end
 
-    if MRT_NL_DB.clearMismatched then
-        ClearMismatched()
+    if showByThisAddon then
+        if MRT_NL_DB.clearMismatched then
+            ClearMismatched()
+        end
     end
 
     if isEncounterInProgress then
