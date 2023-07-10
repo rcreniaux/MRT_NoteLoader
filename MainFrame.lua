@@ -38,12 +38,22 @@ end)
 function MRT_NL:ShowSendButton(show)
     if show then
         if not MRT_NL_Send then
-            MRT_NL_Send = W:CreateButton(MRTNote, L["Send"], "blue", {50, 20})
+            MRT_NL_Send = W:CreateButton(MRTNote, L["Send"], "blue", {46, 16}, true)
             MRT_NL_Send:SetPoint("BOTTOMLEFT", MRTNote, "TOPLEFT")
             MRT_NL_Send:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             MRT_NL_Send:SetScript("OnClick", function(self, button)
                 MRT_NL_Send:SetEnabled(false)
                 MRT_NL:SendNote(button == "RightButton")
+            end)
+            hooksecurefunc(GMRT.A.Note.frame, "UpdateText", function()
+                if MRT_NL_DB.showSendButton then
+                    local note = GMRT.A.Note.frame.text:GetText()
+                    if strtrim(note) == "" then
+                        MRT_NL_Send:Hide()
+                    else
+                        MRT_NL_Send:Show()
+                    end
+                end
             end)
         end
         MRT_NL_Send:Show()
