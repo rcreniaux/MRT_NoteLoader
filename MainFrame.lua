@@ -48,7 +48,7 @@ function MRT_NL:ShowSendButton(show)
             hooksecurefunc(GMRT.A.Note.frame, "UpdateText", function()
                 if MRT_NL_DB.showSendButton then
                     local note = GMRT.A.Note.frame.text:GetText()
-                    if strtrim(note) == "" then
+                    if type(note) ~= "string" or strtrim(note) == "" then
                         MRT_NL_Send:Hide()
                     else
                         MRT_NL_Send:Show()
