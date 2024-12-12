@@ -12,7 +12,7 @@ mainFrame:ClearAllPoints()
 mainFrame:SetPoint("TOPLEFT", 200, -200)
 mainFrame:SetClampRectInsets(0, 0, 20, 385)
 
-local scaleSlider = W:CreateSlider("", mainFrame.header, 1, 4, 50, 0.5, nil, function(value)
+local scaleSlider = W:CreateSlider("", mainFrame.header, 1, 4, 50, 0.25, nil, function(value)
     MRT_NL_DB.scale = value
     mainFrame:SetScale(value)
 end)
@@ -38,8 +38,9 @@ end)
 function MRT_NL:ShowSendButton(show)
     if show then
         if not MRT_NL_Send then
-            MRT_NL_Send = W:CreateButton(MRTNote, L["Send"], "blue", {46, 16}, true)
+            MRT_NL_Send = W:CreateButton(MRTNote, "", "blue", {20, 20}, true)
             MRT_NL_Send:SetPoint("BOTTOMLEFT", MRTNote, "TOPLEFT")
+            MRT_NL_Send:SetTexture("Interface\\AddOns\\MRT_NoteLoader\\Media\\chat", {16, 16}, {"CENTER", 0, 0})
             MRT_NL_Send:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             MRT_NL_Send:SetScript("OnClick", function(self, button)
                 MRT_NL_Send:SetEnabled(false)
@@ -146,7 +147,7 @@ LoadNoteNames = function()
     local items = {}
     for i = 2, #VMRT.Note.Black do
         tinsert(items, {
-            ["text"] = VMRT.Note.BlackNames[i] and VMRT.Note.BlackNames[i] or i,
+            ["text"] = (VMRT.Note.BlackNames[i] and VMRT.Note.BlackNames[i] ~= "") and VMRT.Note.BlackNames[i] or i,
             ["onClick"] = function()
                 UpdateButtons()
                 personalCB:SetChecked(false)
@@ -246,7 +247,7 @@ W:CreateScrollFrame(listPane)
 
 LoadList = function()
     listPane.scrollFrame:Reset()
-    
+
     local last
     for i, t in pairs(MRT_NL_DB.autoload) do
         local b = W:CreateAutoloadButton(listPane.scrollFrame.content, t.type, t.value, t.note, t.isPersonal)

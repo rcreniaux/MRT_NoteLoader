@@ -2,7 +2,7 @@ if not LOCALE_zhCN then return end
 
 local L = select( 2, ...).L
 
-L["zone"] = "地区"
+L["zone"] = "区域"
 L["encounterID"] = "首领战ID"
 L["encounterName"] = "首领战名称"
 L["note"] = "战术方案"

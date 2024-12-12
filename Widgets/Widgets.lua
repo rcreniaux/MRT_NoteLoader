@@ -104,7 +104,7 @@ function W:CreateMovableFrame(title, name, width, height, frameStrata, frameLeve
     f:SetPoint("CENTER")
     f:Hide()
     W:StylizeFrame(f)
-    
+
     -- header
     local header = CreateFrame("Frame", nil, f, "BackdropTemplate")
     f.header = header
@@ -120,11 +120,11 @@ function W:CreateMovableFrame(title, name, width, height, frameStrata, frameLeve
     header:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", 0, -1)
     header:SetHeight(20)
     W:StylizeFrame(header, {0.115, 0.115, 0.115, 1})
-    
+
     header.text = header:CreateFontString(nil, "OVERLAY", font_title_name)
     header.text:SetText(title)
     header.text:SetPoint("CENTER", header)
-    
+
     header.closeBtn = W:CreateButton(header, "×", "red", {20, 20}, false, false, font_special_name, font_special_name)
     header.closeBtn:SetPoint("TOPRIGHT")
     header.closeBtn:SetScript("OnClick", function() f:Hide() end)
@@ -212,13 +212,13 @@ function W:CreateButton(parent, text, buttonColor, size, noBorder, noBackground,
             s:SetTextColor(...)
         end
     end
-    
+
     if noBorder then
         b:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8"})
     else
         b:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
     end
-    
+
     if buttonColor and string.find(buttonColor, "transparent") then -- drop down item
         -- b:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8"})
         if s then
@@ -242,11 +242,11 @@ function W:CreateButton(parent, text, buttonColor, size, noBorder, noBackground,
     end
 
 
-    b:SetBackdropColor(unpack(color)) 
+    b:SetBackdropColor(unpack(color))
     b:SetDisabledFontObject(fontDisable or font_disable)
     b:SetNormalFontObject(fontNormal or font_normal)
     b:SetHighlightFontObject(fontNormal or font_normal)
-    
+
     if buttonColor ~= "none" then
         b:SetScript("OnEnter", function(self) self:SetBackdropColor(unpack(self.hoverColor)) end)
         b:SetScript("OnLeave", function(self) self:SetBackdropColor(unpack(self.color)) end)
@@ -301,19 +301,19 @@ end
 function W:CreateCheckButton(parent, label, onClick, color)
     -- InterfaceOptionsCheckButtonTemplate --> FrameXML\InterfaceOptionsPanels.xml line 19
     -- OptionsBaseCheckButtonTemplate -->  FrameXML\OptionsPanelTemplates.xml line 10
-    
+
     local cb = CreateFrame("CheckButton", nil, parent, "BackdropTemplate")
     cb.onClick = onClick
     cb:SetScript("OnClick", function(self)
         PlaySound(self:GetChecked() and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF)
         if cb.onClick then cb.onClick(self:GetChecked() and true or false, self) end
     end)
-    
+
     cb.label = cb:CreateFontString(nil, "OVERLAY", font_normal_name)
     cb.label:SetText(label)
     cb.label:SetPoint("LEFT", cb, "RIGHT", 5, 0)
     -- cb.label:SetTextColor(accentColor.t[1], accentColor.t[2], accentColor.t[3])
-    
+
     cb:SetSize(14, 14)
     if strtrim(label) ~= "" then
         cb:SetHitRectInsets(0, -cb.label:GetStringWidth()-5, 0, 0)
@@ -340,7 +340,7 @@ function W:CreateCheckButton(parent, label, onClick, color)
     end
     highlightTexture:SetPoint("TOPLEFT", 1, -1)
     highlightTexture:SetPoint("BOTTOMRIGHT", -1, 1)
-    
+
     cb:SetCheckedTexture(checkedTexture)
     cb:SetHighlightTexture(highlightTexture, "ADD")
 
@@ -414,7 +414,7 @@ function W:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, 
     local unit = isPercentage and "%" or ""
 
     W:StylizeFrame(slider, {0.115, 0.115, 0.115, 1})
-    
+
     local nameText = slider:CreateFontString(nil, "OVERLAY", font_normal_name)
     nameText:SetText(name)
     nameText:SetPoint("BOTTOM", slider, "TOP", 0, 2)
@@ -462,7 +462,7 @@ function W:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, 
     lowText:SetTextColor(0.7, 0.7, 0.7)
     lowText:SetPoint("TOPLEFT", slider, "BOTTOMLEFT", 0, -1)
     lowText:SetPoint("BOTTOM", currentEditBox)
-    
+
     local highText = slider:CreateFontString(nil, "OVERLAY", font_normal_name)
     slider.highText = highText
     highText:SetTextColor(0.7, 0.7, 0.7)
@@ -490,7 +490,7 @@ function W:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, 
 
     slider.onValueChangedFn = onValueChangedFn
     slider.afterValueChangedFn = afterValueChangedFn
-    
+
     local oldValue
     slider:SetScript("OnValueChanged", function(self, value, userChanged)
         if oldValue == value then return end
@@ -533,7 +533,7 @@ function W:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, 
         lowText:SetTextColor(0.4, 0.4, 0.4)
         highText:SetTextColor(0.4, 0.4, 0.4)
     end)
-    
+
     slider:SetScript("OnEnable", function()
         nameText:SetTextColor(1, 1, 1)
         currentEditBox:SetEnabled(true)
@@ -552,7 +552,7 @@ function W:CreateSlider(name, parent, low, high, width, step, onValueChangedFn, 
         highText:SetText(maxV..unit)
     end
     slider:UpdateMinMaxValues(low, high)
-    
+
     return slider
 end
 
@@ -579,7 +579,7 @@ function W:CreateScrollFrame(parent, color, border)
     scrollFrame:SetScrollChild(content)
     scrollFrame.content = content
     -- content:SetFrameLevel(2)
-    
+
     -- scrollbar
     local scrollbar = CreateFrame("Frame", nil, scrollFrame, "BackdropTemplate")
     scrollbar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", 2, 0)
@@ -587,7 +587,7 @@ function W:CreateScrollFrame(parent, color, border)
     scrollbar:Hide()
     W:StylizeFrame(scrollbar, {0.1, 0.1, 0.1, 0.8})
     scrollFrame.scrollbar = scrollbar
-    
+
     -- scrollbar thumb
     local scrollThumb = CreateFrame("Frame", nil, scrollbar, "BackdropTemplate")
     scrollThumb:SetWidth(5) -- scrollbar's width is 5
@@ -598,18 +598,18 @@ function W:CreateScrollFrame(parent, color, border)
     scrollThumb:SetMovable(true)
     scrollThumb:SetHitRectInsets(-5, -5, 0, 0) -- Frame:SetHitRectInsets(left, right, top, bottom)
     scrollFrame.scrollThumb = scrollThumb
-    
+
     -- reset content height manually ==> content:GetBoundsRect() make it right @OnUpdate
     function scrollFrame:ResetHeight()
         content:SetHeight(2)
     end
-    
+
     -- reset to top, useful when used with DropDownMenu (variable content height)
     function scrollFrame:ResetScroll()
         scrollFrame:SetVerticalScroll(0)
         scrollThumb:SetPoint("TOP")
     end
-    
+
     -- FIXME: GetVerticalScrollRange goes wrong in 9.0.1
     function scrollFrame:GetVerticalScrollRange()
         local range = content:GetHeight() - scrollFrame:GetHeight()
@@ -654,7 +654,7 @@ function W:CreateScrollFrame(parent, color, border)
         end
     end)
     ]]
-    
+
     -- stores all widgets on content frame
     -- local autoWidthWidgets = {}
 
@@ -672,11 +672,11 @@ function W:CreateScrollFrame(parent, color, border)
         scrollFrame:ResetScroll()
         scrollFrame:ClearContent()
     end
-    
+
     -- function scrollFrame:SetWidgetAutoWidth(widget)
     -- 	table.insert(autoWidthWidgets, widget)
     -- end
-    
+
     -- on width changed, make the same change to widgets
     scrollFrame:SetScript("OnSizeChanged", function()
         -- change widgets width (marked as auto width)
@@ -711,7 +711,7 @@ function W:CreateScrollFrame(parent, color, border)
     -- DO NOT USE OnScrollRangeChanged to check whether it can scroll.
     -- "invisible" widgets should be hidden, then the scroll range is NOT accurate!
     -- scrollFrame:SetScript("OnScrollRangeChanged", function(self, xOffset, yOffset) end)
-    
+
     -- dragging and scrolling
     scrollThumb:SetScript("OnMouseDown", function(self, button)
         if button ~= 'LeftButton' then return end
@@ -722,7 +722,7 @@ function W:CreateScrollFrame(parent, color, border)
         self:SetScript("OnUpdate", function(self)
             --------------------- y offset before dragging + mouse offset
             local newOffsetY = offsetY + (select(2, GetCursorPosition()) - mouseY) / uiScale
-            
+
             -- even scrollThumb:SetPoint is already done in OnVerticalScroll, but it's useful in some cases.
             if newOffsetY >= 0 then -- @top
                 scrollThumb:SetPoint("TOP")
@@ -741,7 +741,7 @@ function W:CreateScrollFrame(parent, color, border)
     scrollThumb:SetScript("OnMouseUp", function(self)
         self:SetScript("OnUpdate", nil)
     end)
-    
+
     scrollFrame:SetScript("OnVerticalScroll", function(self, offset)
         if scrollFrame:GetVerticalScrollRange() ~= 0 then
             local scrollP = scrollFrame:GetVerticalScroll()/scrollFrame:GetVerticalScrollRange()
@@ -755,12 +755,12 @@ function W:CreateScrollFrame(parent, color, border)
         scrollFrame:GetScript("OnVerticalScroll")(scrollFrame)
         scrollFrame:VerticalScroll(0)
     end
-    
+
     local step = 25
     function scrollFrame:SetScrollStep(s)
         step = s
     end
-    
+
     -- enable mouse wheel scroll
     scrollFrame:EnableMouseWheel(true)
     scrollFrame:SetScript("OnMouseWheel", function(self, delta)
@@ -770,7 +770,7 @@ function W:CreateScrollFrame(parent, color, border)
             scrollFrame:VerticalScroll(step)
         end
     end)
-    
+
     return scrollFrame
 end
 
@@ -830,7 +830,7 @@ function W:CreateDropdown(parent, width, dropdownType, isMini)
     menu:EnableMouse(true)
     -- menu:SetFrameLevel(5)
     W:StylizeFrame(menu, {0.115, 0.115, 0.115, 1})
-    
+
     -- button: open/close menu list
     if isMini then
         menu.button = W:CreateButton(menu, "", "transparent-accent", {18 ,18})
@@ -870,13 +870,13 @@ function W:CreateDropdown(parent, width, dropdownType, isMini)
         menu.texture:SetPoint("BOTTOMRIGHT", -18, 1)
         menu.texture:SetVertexColor(1, 1, 1, 0.7)
     end
-    
+
     -- keep all menu item buttons
     menu.items = {}
 
     -- index in items
     -- menu.selected
-    
+
     function menu:SetSelected(text, value)
         local valid
         for i, item in pairs(menu.items) do
@@ -1057,7 +1057,7 @@ function W:CreateDropdown(parent, width, dropdownType, isMini)
         list.menu = menu -- menu's OnHide -> list:Hide
         list:ClearAllPoints()
         list:SetPoint("TOPLEFT", menu, "BOTTOMLEFT", 0, -2)
-        
+
         if #menu.items == 0 then
             list:SetSize(menu:GetWidth(), 5)
         elseif #menu.items <= 10 then
@@ -1084,7 +1084,7 @@ function W:CreateDropdown(parent, width, dropdownType, isMini)
             list:Hide()
         end
     end)
-    
+
     -- scripts
     menu.button:HookScript("OnClick", function()
         if list.menu ~= menu then -- list shown by other dropdown
@@ -1107,7 +1107,7 @@ function W:CreateDropdown(parent, width, dropdownType, isMini)
             list:Show()
         end
     end)
-    
+
     return menu
 end
 
@@ -1119,7 +1119,7 @@ function W:CreateAutoloadButton(parent, type, value, note, isPersonal)
     -- b:SetFrameLevel(5)
     b:SetSize(20, 20)
     b:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
-    b:SetBackdropColor(0.115, 0.115, 0.115, 1) 
+    b:SetBackdropColor(0.115, 0.115, 0.115, 1)
     b:SetBackdropBorderColor(0, 0, 0, 1)
 
     local typeText = b:CreateFontString(nil, "OVERLAY", font_normal_name)
@@ -1170,7 +1170,7 @@ function W:CreateAutoloadButton(parent, type, value, note, isPersonal)
         sep1:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], 1)
         sep2:SetColorTexture(accentColor.t[1], accentColor.t[2], accentColor.t[3], 1)
     end)
-    
+
     b:SetScript("OnLeave", function()
         b:SetBackdropColor(0.115, 0.115, 0.115, 1)
         b:SetBackdropBorderColor(0, 0, 0, 1)

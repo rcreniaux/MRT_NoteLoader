@@ -44,16 +44,19 @@ function eventFrame:ADDON_LOADED(addon)
         eventFrame:RegisterEvent("ENCOUNTER_END")
 
         -- button
-        local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote, "MRT Note Loader", "blue", {135, 20})
-        b:SetPoint("TOPRIGHT", 0, -45)
-        b:SetScript("OnClick", function()
-            MRT_NoteLoader:Show()
+        hooksecurefunc(GMRT.A.Note.options, "Load", function()
+            local b = MRT_NL.widgets:CreateButton(MRTOptionsFrameNote.tab.tabs[1], "MRT Note Loader", "blue", {135, 20})
+            b:SetPoint("TOPRIGHT", -280, 0)
+            b:SetScript("OnClick", function()
+                MRT_NoteLoader:Show()
+            end)
         end)
 
         -- NL_DEFAULT
         if VMRT.Note.BlackNames[1] ~= "Note Loader Default" then
             tinsert(VMRT.Note.BlackNames, 1, "Note Loader Default")
             tinsert(VMRT.Note.Black, 1, "")
+            tinsert(VMRT.Note.AutoLoad, 1, nil)
         end
 
         -- send button
@@ -133,15 +136,15 @@ local encounterNote = false
 local encounterPersonal = false
 
 function MRT_NL:LoadNote(title, isPersonal, force)
-    --! do not load if current note is loaded by ENCOUNTER_START 
+    --! do not load if current note is loaded by ENCOUNTER_START
     if isEncounterInProgress and not force then return end
-    
+
     local index = GetNoteIndex(title)
     if not index then
         MRT_NL:Print(string.format("note |cffff9015%s|r not found.", title))
         return
     end
-    
+
     if not VMRT.Note.enabled then
         GMRT.A.Note:Enable()
     end
@@ -153,6 +156,11 @@ function MRT_NL:LoadNote(title, isPersonal, force)
     else
         GMRT.A.Note.frame:Save(index)
         MRT_NL:Print(string.format(L["note loaded"].." |cffff9015%s|r.", title))
+    end
+
+    if WeakAuras then
+        WeakAuras.ScanEvents("EXRT_NOTE_UPDATE")
+        WeakAuras.ScanEvents("MRT_NOTE_UPDATE")
     end
 
     GMRT.A.Note.frame:Show()
@@ -191,17 +199,17 @@ local function PostAction()
     elseif MRT_NL_DB.postAction == "load" or MRT_NL_DB.postAction == "load_clear" then
         if VMRT.Note.BlackNames[1] == "Note Loader Default" then
             GMRT.A.Note.frame:Save(1)
-            MRT_NL:Print(string.format(L["note loaded"].." |cffff9015%s|r.", L["Default"]))
+            MRT_NL:Print(string.format(L["note loaded"].." |cffff9015%s|r.", "Note Loader Default"))
         end
         if MRT_NL_DB.postAction == "load_clear" then
             VMRT.Note.SelfText = ""
         end
         GMRT.A.Note.frame:UpdateText()
-    
+
     elseif MRT_NL_DB.postAction == "load_personal" or MRT_NL_DB.postAction == "load_personal_clear" then
         if VMRT.Note.BlackNames[1] == "Note Loader Default" then
             VMRT.Note.SelfText = VMRT.Note.Black[1]
-            MRT_NL:Print(string.format(L["personal note loaded"].." |cffff9015%s|r.", L["Default"]))
+            MRT_NL:Print(string.format(L["personal note loaded"].." |cffff9015%s|r.", "Note Loader Default"))
         end
         if MRT_NL_DB.postAction == "load_personal_clear" then
             VMRT.Note.Text1 = ""
@@ -214,14 +222,14 @@ local function PostAction()
 
 end
 
-local function ClearMismatched()
+local function ClearNote(forceNote, forcePersonal)
     -- clear note if not matched
-    if not (zoneNote or encounterNote) then
+    if not (zoneNote or encounterNote) or forceNote then
         VMRT.Note.Text1 = ""
     end
 
     -- clear personal note if not matched
-    if not (zonePersonal or encounterPersonal) then
+    if not (zonePersonal or encounterPersonal) or forcePersonal then
         VMRT.Note.SelfText = ""
     end
 
@@ -252,7 +260,7 @@ function eventFrame:ZONE_CHANGED()
         MRT_NL:LoadNote(MRT_NL.autoload.zone[zone])
         zoneNote = true
     end
-    
+
     if MRT_NL.autoload.zone_p[zone] then
         MRT_NL:LoadNote(MRT_NL.autoload.zone_p[zone], true)
         zonePersonal = true
@@ -260,7 +268,7 @@ function eventFrame:ZONE_CHANGED()
 
     if showByThisAddon then
         if MRT_NL_DB.clearMismatched then
-            ClearMismatched()
+            ClearNote()
         end
 
         if not isEncounterInProgress and not (zoneNote or zonePersonal) then
@@ -284,7 +292,7 @@ end
 -------------------------------------------------
 function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, groupSize)
     MRT_NL:Fire("ENCOUNTER_START", encounterID, encounterName)
-    
+
     encounterNote = false
     encounterPersonal = false
 
@@ -293,7 +301,7 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
         MRT_NL:LoadNote(MRT_NL.autoload.eid[encounterID], false, true)
         encounterNote = true
     end
-    
+
     if MRT_NL.autoload.eid_p[encounterID] then
         isEncounterInProgress = true
         MRT_NL:LoadNote(MRT_NL.autoload.eid_p[encounterID], true, true)
@@ -313,7 +321,7 @@ function eventFrame:ENCOUNTER_START(encounterID, encounterName, difficultyID, gr
 
     if showByThisAddon then
         if MRT_NL_DB.clearMismatched then
-            ClearMismatched()
+            ClearNote()
         end
     end
 
@@ -325,14 +333,20 @@ end
 
 function eventFrame:ENCOUNTER_END()
     isEncounterInProgress = false
-    encounterNote = false
-    encounterPersonal = false
 
     if showByThisAddon then
-        if zoneNote or zonePersonal then -- reload note for this zone
+        if MRT_NL_DB.clearMismatched then
+            ClearNote(encounterNote, encounterPersonal)
+        end
+
+        if zoneNote or zonePersonal then
+            -- reload note for this zone
             eventFrame:ZONE_CHANGED()
         else
             PostAction()
         end
     end
+
+    encounterNote = false
+    encounterPersonal = false
 end

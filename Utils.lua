@@ -1,27 +1,32 @@
 local _, MRT_NL = ...
 
-local sendChannel
-local function UpdateSendChannel()
+local function GetSendChannel()
     if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
-        sendChannel = "INSTANCE_CHAT"
+        return "INSTANCE_CHAT"
     elseif IsInRaid() then
-        sendChannel = "RAID"
-    else
-        sendChannel = "PARTY"
+        return "RAID"
+    elseif IsInGroup() then
+        return "PARTY"
     end
 end
 
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink
+
 local isWaitForSending
 function MRT_NL:SendChatMessage(lines)
+    local sendChannel = GetSendChannel()
+    if not sendChannel then
+        MRT_NL_Send:SetEnabled(true)
+        return
+    end
+
     if isWaitForSending then return end
     isWaitForSending = true
-
-    UpdateSendChannel()
 
     -- remove color codes
     lines = string.gsub(lines, "\124\124c%w%w%w%w%w%w%w%w", "")
     lines = string.gsub(lines, "\124\124r", "")
-    
+
     -- {time:mm:ss}, {time:ss}
     lines = string.gsub(lines, "%{time:%d+:%d+%}", function(text)
         local m, s = strmatch(text, "(%d+):(%d+)")
@@ -56,7 +61,7 @@ function MRT_NL:SendChatMessage(lines)
         if count == 0 then count = "" end
 
         local link = GetSpellLink(id) or ""
-        
+
         return count..link.."[0:"..s.."]"
     end)
 
