@@ -152,6 +152,7 @@ function MRT_NL:LoadNote(title, isPersonal, force)
     if isPersonal then
         VMRT.Note.SelfText = VMRT.Note.Black[index]
         GMRT.A.Note.frame:UpdateText()
+        MRTNotePersonal:UpdateText()
         MRT_NL:Print(string.format(L["personal note loaded"].." |cffff9015%s|r.", title))
     else
         GMRT.A.Note.frame:Save(index)
@@ -159,11 +160,12 @@ function MRT_NL:LoadNote(title, isPersonal, force)
     end
 
     if WeakAuras then
-        WeakAuras.ScanEvents("EXRT_NOTE_UPDATE")
-        WeakAuras.ScanEvents("MRT_NOTE_UPDATE")
+        WeakAuras.ScanEvents("EXRT_NOTE_UPDATE", true)
+        WeakAuras.ScanEvents("MRT_NOTE_UPDATE", true)
     end
 
     GMRT.A.Note.frame:Show()
+    MRTNotePersonal:Show()
     showByThisAddon = true
 end
 
@@ -193,6 +195,7 @@ local function PostAction()
     if MRT_NL_DB.postAction == "hide" then
         -- visibilityUpdateRequired = true
         GMRT.A.Note.frame:Hide()
+        MRTNotePersonal:Hide()
         -- GMRT.A.Note.frame:SetAlpha(0)
         -- GMRT.A.Note.frame:EnableMouse(false)
 
@@ -234,6 +237,7 @@ local function ClearNote(forceNote, forcePersonal)
     end
 
     GMRT.A.Note.frame:UpdateText()
+    MRTNotePersonal:UpdateText()
 end
 
 -------------------------------------------------

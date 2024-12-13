@@ -389,7 +389,8 @@ end)
 -- slash
 -------------------------------------------------
 SLASH_MRT_NOTE_LOADER1 = "/mrtnl"
-SLASH_MRT_NOTE_LOADER2 = "/nl"
+SLASH_MRT_NOTE_LOADER2 = "/mnl"
+SLASH_MRT_NOTE_LOADER3 = "/nl"
 function SlashCmdList.MRT_NOTE_LOADER(msg, editbox)
     local command, rest = msg:match("^(%S*)%s*(.-)$")
 
