@@ -40,8 +40,11 @@ function eventFrame:ADDON_LOADED(addon)
         eventFrame:RegisterEvent("ZONE_CHANGED")
         eventFrame:RegisterEvent("ZONE_CHANGED_INDOORS")
         eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-        eventFrame:RegisterEvent("ENCOUNTER_START")
-        eventFrame:RegisterEvent("ENCOUNTER_END")
+        -- eventFrame:RegisterEvent("ENCOUNTER_START")
+        -- eventFrame:RegisterEvent("ENCOUNTER_END")
+
+        -- Register PLAYER_TARGET_CHANGED event
+        eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 
         -- button
         hooksecurefunc(GMRT.A.Note.options, "Load", function()
@@ -119,6 +122,7 @@ end
 local function GetNoteIndex(title)
     if type(title) == "string" then
         for i, name in pairs(VMRT.Note.BlackNames) do
+            -- print("GetNoteIndex", i, name)
             if title == name then
                 return i
             end
@@ -288,6 +292,62 @@ function eventFrame:PLAYER_ENTERING_WORLD(isLogin, isReload)
     eventFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
     if isReload then
         eventFrame:ZONE_CHANGED()
+    end
+end
+
+-- Table to track loaded notes for the session
+local loadedNotes = {}
+
+-- Function to handle PLAYER_TARGET_CHANGED
+function eventFrame:PLAYER_TARGET_CHANGED()
+    local targetName = UnitName("target") -- Get the name of the current target
+    local targetGUID = UnitGUID("target") -- Get the GUID of the current target
+
+    -- Debugging: Print the target name and GUID
+    -- print("Target Name:", targetName)
+    -- print("Target GUID:", targetGUID)
+
+    if not targetName or not targetGUID then
+        return -- No valid target
+    end
+
+    -- Check if the note for this target has already been loaded
+    if loadedNotes[targetName] then
+        -- print("Note for target already loaded:", targetName)
+        return
+    end
+
+    MRT_NL:Fire("PLAYER_TARGET_CHANGED", targetName)
+
+    local encounterNote = false
+    local encounterPersonal = false
+
+    -- Attempt to load the note directly from MRT if not found in MRT_NL_DB
+    local sanitizedTargetName = string.gsub(targetName, " ", "_") -- Replace spaces with underscores
+    local mcPrefixedName = "MC_" .. sanitizedTargetName
+    local index = GetNoteIndex(mcPrefixedName)
+    if not index then
+        -- If "MC_" doesn't work, try with "BWL_"
+        -- print("Note with prefix MC_ not found, trying BWL_")
+        local bwlPrefixedName = "BWL_" .. sanitizedTargetName
+        index = GetNoteIndex(bwlPrefixedName)
+
+        if index then
+            -- print("Loading note with prefix BWL_")
+            MRT_NL:LoadNote(bwlPrefixedName, false, true)
+            encounterNote = true
+        else
+            -- print("Note not found with either MC_ or BWL_ prefixes")
+        end
+    else
+        -- print("Loading note with prefix MC_")
+        MRT_NL:LoadNote(mcPrefixedName, false, true)
+        encounterNote = true
+    end
+
+     -- Mark this note as loaded for the session
+    if encounterNote then
+        loadedNotes[targetName] = true
     end
 end
 
